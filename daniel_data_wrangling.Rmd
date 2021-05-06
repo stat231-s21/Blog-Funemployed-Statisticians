@@ -1,0 +1,77 @@
+---
+title: "daniel_data_wrangling"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(robotstxt)
+library(rvest)
+library(knitr)
+library(janitor)
+library(viridis)
+
+knitr::opts_chunk$set(
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+```
+
+## National Sales Volume Difference over Time (Box Plot)
+
+```{r}
+#get Salecount data. Want the points for different cities, no average. 
+#remove unnecessary columns
+SalesCountData <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/sales_count.csv"))
+
+SalesCountData <- SalesCountData %>%
+  filter(SizeRank != 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionType")
+
+#assign states to regions
+northeast <- c("NY", "NJ", "PA", "CT", "ME", "MA", "NH", "RI", "VT")
+midwest <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MO", "MN", "NE", "ND", "SD")
+south <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "WV", "DC",
+          "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
+west <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
+
+SalesCountStateData <- SalesCountData %>%
+  mutate(region = case_when(StateName %in% northeast ~ "NORTHEAST",
+                            StateName %in% midwest ~ "MIDWEST",
+                            StateName %in% south ~ "SOUTH",
+                            StateName %in% west ~ "WEST",
+                            TRUE ~ "")) %>%
+  rename(city = RegionName,
+         state = StateName)
+        
+#pivot for different date values
+SalesCountDataLong <- SalesCountStateData %>%
+  pivot_longer(c(-"city", -"state", -"region"), names_to = "date", values_to = "sales_count")
+
+
+boxplot_data <- filter(SalesCountDataLong, date> "2018-12-31") 
+```
+
+## Interest vs Home Price (Scatter)
+
+```{r}
+#Get FRED Data
+FRED_Data <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/FRED.csv")) %>%
+  rename(date = DATE, interest_rate = WPUSI012011)
+
+#limit to dates from Zillow
+FRED_Data$date <- as.Date(FRED_Data$date, format= "%Y-%m-%d")
+fred_data_mod <- subset(FRED_Data, date> "2008-04-30")
+
+#Zillow Data on median home price monthly. Want US average
+MonthlySalePriceData <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/median_monthly.csv"))
+USaverageprice <- MonthlySalePriceData %>%
+  filter(SizeRank == 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionName", -"RegionType", -"StateName") %>%
+  pivot_longer(col = everything(), names_to = "date", values_to = "median_price") %>%
+  mutate(date = as.Date(date, format= "%Y-%m-%d")) %>%
+  mutate(date = date + 1)
+
+#combine
+scatter_data <- USaverageprice %>%
+  inner_join(fred_data_mod, by = "date")
+```
