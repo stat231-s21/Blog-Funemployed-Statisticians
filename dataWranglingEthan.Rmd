@@ -1,0 +1,54 @@
+---
+title: "DataWranglingEthan"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(robotstxt)
+library(knitr)
+library(janitor)
+library(rvest)
+library(dplyr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+valueTableState<- read.csv("/Users/ethangilman/Desktop/Stat231_R/Stat231_ethan//PUG_Blog/Zillow_homevalue.csv")
+
+valueTableUS <- read.csv("/Users/ethangilman/Desktop/Stat231_R/Stat231_ethan//PUG_Blog/Zillow_USMetro.csv")
+
+valueTableUS2 <- valueTableUS %>%
+  select(3,5,282:308) %>%
+  filter(RegionName == "United States")
+
+valueTable2 <- valueTable%>%
+  select(3,5,282:308)
+
+FullTable <- valueTable2 %>%
+  full_join(valueTableUS2)
+
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+
+
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
