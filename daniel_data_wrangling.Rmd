@@ -71,7 +71,7 @@ USaverageprice <- MonthlySalePriceData %>%
   mutate(date = as.Date(date, format= "%Y-%m-%d")) %>%
   mutate(date = date + 1)
 
-#combine
+#combine the two datasets
 scatter_data <- USaverageprice %>%
   inner_join(fred_data_mod, by = "date")
 ```
