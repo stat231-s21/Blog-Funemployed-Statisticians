@@ -1,0 +1,319 @@
+---
+title: "Josh_DataWrangling"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+```
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+## HPI vs CPi and SP&500 vs Case Shiller HPI
+
+```{r}
+#Import CPI data
+CPI <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/Consumer Price Index.xls", range = "A11:B36") %>%
+  #Renaming columns
+  rename(Date = "observation_date", ConsumerPriceIndex = "USACPIALLMINMEI") %>%
+  #formatting the class of this column
+  mutate(Date = as.Date(as.character(Date), format = "%Y-%m-%d"))
+  
+#Import HPI
+HPI <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/Case Shiller US National Home Price Index.xls", range = "A11:B36") %>%
+  rename(Date = "observation_date", HousingPriceIndex = "CSUSHPINSA") %>%
+  mutate(Date = as.Date(as.character(Date), format = "%Y-%m-%d"))
+
+#Bind Together
+CPIHPI <- HPI %>%
+  #Joining the two datasets by date
+  left_join(CPI, by = "Date") %>%
+  #Creating a long dataset for plotting
+  pivot_longer(!Date, values_to = "Index_Values", names_to = "Index_Type")
+
+#Import S&P 500/Case Shiller National Home Index Price
+SPHomePrice <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/sp-500-vs-home-prices.xls.xlsx") %>%
+  rename(DateTime = "S&P 500 vs. Home Prices", "SP_500" = "...2", "Case_Shiller_Home_Price_Index" = "...3") %>%
+  filter(DateTime > "2019-02-01") %>%
+  filter(DateTime != "DateTime") %>%
+  mutate(Date = as.Date(DateTime, format = "%Y-%m-%d")) %>%
+  select(-DateTime) %>%
+  mutate(
+    SP_500 = as.double(SP_500),
+    Case_Shiller_Home_Price_Index = as.double(Case_Shiller_Home_Price_Index)
+         ) %>%
+   pivot_longer(!Date, names_to = "Index_Type", values_to = "Index_Value")
+```
+
+## Building Permit vs Construction Material Index Percentage Change
+
+```{r}
+BP202002 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202002.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("02-01-2020", "%m-%d-%Y"))
+
+BP202003 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202003.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("03-01-2020", "%m-%d-%Y"))
+
+BP202004 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202004.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("04-01-2020", "%m-%d-%Y"))
+
+BP202005 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202005.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("05-01-2020", "%m-%d-%Y"))
+
+BP202006 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202006.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("06-01-2020", "%m-%d-%Y"))
+
+BP202007 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202007.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("07-01-2020", "%m-%d-%Y"))
+
+BP202008 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202008.xls", range = "A8:G74") %>%
+ rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("08-01-2020", "%m-%d-%Y"))
+
+BP202009 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202009.xls", range = "A8:G74") %>%
+ rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("09-01-2020", "%m-%d-%Y"))
+
+BP202010 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202010.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("10-01-2020", "%m-%d-%Y"))
+
+BP202011 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202011.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("11-01-2020", "%m-%d-%Y"))
+
+BP202012 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202012.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("12-01-2020", "%m-%d-%Y"))
+
+BP202101 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202101.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("01-01-2021", "%m-%d-%Y"))
+
+BP202102 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202102.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("02-01-2021", "%m-%d-%Y"))
+
+BuildingPermits <- bind_rows(BP202002, BP202003, BP202004, BP202005, BP202006, BP202007, BP202008, BP202009, BP202010, BP202011, BP202012, BP202101, BP202102) %>%
+  filter(Housing_Type == "Total") %>%
+  select(-Housing_Type) %>%
+  arrange(Region) %>%
+  mutate(pct_chg = 100 * (Count - lag(Count))/lag(Count)) %>%
+  within(pct_chg[Date == '2020-02-01'] <- '0')
+  
+
+#Import Construction Material 
+ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/Construction Materials.xls", range = "A30:B42", col_names = FALSE) %>%
+  rename(Date = "...1",
+         Construction_Material_Index = "...2") %>%
+  mutate(
+    pct_chg = 100 * (Construction_Material_Index - lag(Construction_Material_Index))/lag(Construction_Material_Index)
+  ) %>%
+  within(pct_chg[Date == '2020-02-01'] <- '0')
+```
