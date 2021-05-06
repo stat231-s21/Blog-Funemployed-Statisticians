@@ -39,14 +39,20 @@ CPIHPI <- HPI %>%
 #Import S&P 500/Case Shiller National Home Index Price
 SPHomePrice <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/sp-500-vs-home-prices.xls.xlsx") %>%
   rename(DateTime = "S&P 500 vs. Home Prices", "SP_500" = "...2", "Case_Shiller_Home_Price_Index" = "...3") %>%
+  #Filter for dates of 2 years of data
   filter(DateTime > "2019-02-01") %>%
+  #Filter out extraneous row
   filter(DateTime != "DateTime") %>%
+  #Factor class to date
   mutate(Date = as.Date(DateTime, format = "%Y-%m-%d")) %>%
+  #Delete old row
   select(-DateTime) %>%
+  #factor class to dbl for plot
   mutate(
     SP_500 = as.double(SP_500),
     Case_Shiller_Home_Price_Index = as.double(Case_Shiller_Home_Price_Index)
          ) %>%
+  #PIvot longer for plotting
    pivot_longer(!Date, names_to = "Index_Type", values_to = "Index_Value")
 ```
 
@@ -54,7 +60,9 @@ SPHomePrice <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statistici
 
 ```{r}
 BP202002 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202002.xls", range = "A8:G74") %>%
+  #Rename Column
   rename(Region = "...1") %>%
+  #Filter out non states
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
   filter(!Region == "New England Division") %>%   
@@ -300,20 +308,29 @@ BP202102 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("02-01-2021", "%m-%d-%Y"))
 
+#Bind all tables together for full dataset
 BuildingPermits <- bind_rows(BP202002, BP202003, BP202004, BP202005, BP202006, BP202007, BP202008, BP202009, BP202010, BP202011, BP202012, BP202101, BP202102) %>%
+  #Filter for Total Numbers for US and States
   filter(Housing_Type == "Total") %>%
+  #Remove Housing Type since all are Total numbers
   select(-Housing_Type) %>%
+  #Arrange by region and date for percentage change calculation
   arrange(Region) %>%
+  #Calculate percentage change
   mutate(pct_chg = 100 * (Count - lag(Count))/lag(Count)) %>%
+  #Remove percentage change for datapoints without previous datapoints
   within(pct_chg[Date == '2020-02-01'] <- '0')
   
 
-#Import Construction Material 
+#Import Construction Material
 ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/Construction Materials.xls", range = "A30:B42", col_names = FALSE) %>%
+  #Renaming columns to make sense
   rename(Date = "...1",
          Construction_Material_Index = "...2") %>%
+  #Calculate percentage change
   mutate(
     pct_chg = 100 * (Construction_Material_Index - lag(Construction_Material_Index))/lag(Construction_Material_Index)
   ) %>%
+  #Remove percentage change for datapoints without previous datapoints
   within(pct_chg[Date == '2020-02-01'] <- '0')
 ```
