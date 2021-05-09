@@ -1,7 +1,7 @@
 ---
-title: "Your Project Title Here"
-author: "Your Names Here"
-date: "Add a date"
+title: "COVID-19 Effects on the Real Estate Market"
+author: "Joshua Kim, Daniel Choe, Ethan Gilmore"
+date: "05/18/2021"
 output:
   rmdformats::readthedown:
     thumbnails: false
@@ -13,7 +13,38 @@ knitr::opts_chunk$set(echo = TRUE, fig.align="center")
 library(tidyverse)
 ```
 
-# Header 1
+# Introduction
+
+# Overview of Analysis
+
+# Data
+FRED and Zillow
+
+# National Sale Volume Difference Bar Graph
+
+# US Average Home Price Area Graph
+
+# Home Price by State, Interactive Spatial Map
+
+# Housing Price Index vs CPI, Case-Schiller vs S&P 500 Line Graphs
+
+# Interest vs Home Price Scatterplot
+
+# Construction Material Costs vs Building Permits Percentage Change Line Graph
+
+# Conclusion and Limitations
+
+## Answering Questions of Interest
+
+**1. How did the COVID-19 pandemic impact the real estate industry?**
+**2. How well has the real estate market performed compared to other markets?**
+**3. What explains this real estate market behavior?**
+
+## Possible Next Steps
+
+# Citations
+
+
 
 ## Header 2
 
