@@ -11,6 +11,12 @@ library(knitr)
 library(janitor)
 library(rvest)
 library(dplyr)
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+library(leaflet)
+library(leaflet.extras)
+library(maps)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -34,6 +40,12 @@ valueTable2 <- valueTable%>%
 
 FullTable <- valueTable2 %>%
   full_join(valueTableUS2)
+  
+  FullTableLong <- FullTable %>%
+  pivot_longer(c(-"RegionName",-"StateName"), names_to = "date" , values_to = "price")
+
+  USTable <- FullTableLong %>%
+    filter (RegionName == "United States")
 
 
 
@@ -43,12 +55,149 @@ FullTable <- valueTable2 %>%
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
+```{r}
 
+FullTableLong%>%
+ggplot(aes(x=date, y=price, group = RegionName, color = RegionName)) +
+  geom_line() +
+  geom_point()
+
+
+northeast <- c("NY", "NJ", "PA", "CT", "ME", "MA", "NH", "RI", "VT")
+midwest <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MO", "MN", "NE", "ND", "SD")
+south <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "WV", "DC",
+          "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
+west <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
+
+BoxPlotData <- MapTable %>%
+  mutate(region = case_when(StateName %in% northeast ~ "NORTHEAST",
+                            StateName %in% midwest ~ "MIDWEST",
+                            StateName %in% south ~ "SOUTH",
+                            StateName %in% west ~ "WEST",
+                            RegionName == "united states" ~ "America Total",
+                            TRUE ~ "")) %>%
+  rename(city = RegionName,
+         state = StateName)
+
+options(scipen=10000)
+
+
+BoxPlot <- BoxPlotData %>%
+  ggplot(aes(x=region, y=price, fill=region)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("A boxplot with jitter") +
+    xlab("Region") +
+    theme_ipsum()
+  
+  BoxPlot
+
+
+```
+```{r}
+
+  MapTable <- FullTableLong %>%
+    filter(date == "X2019.01.31")
+
+usa_states <- map_data(map = "state"
+                       , region = ".") 
+
+
+MapTable <- MapTable %>%
+  mutate("RegionName" = tolower(RegionName))
+#creating new datset
+MapTable2 <- MapTable %>%
+  inner_join(usa_states, by = c("RegionName" = "region"))
+
+
+options(scipen=10000)
+
+usa_states_leaflet <- map("state", fill = TRUE, plot = FALSE)
+class(usa_states_leaflet)
+usa_states_leaflet$names
+
+ggplot(MapTable2, aes(x = long, y = lat, group = group
+                      , fill = price)) +
+  geom_polygon(color = "white") +
+  theme_void() +
+  coord_fixed(ratio = 1.3) +
+  labs(title = "Home Prices"
+       , subtitle = "byState"
+       , caption = "* Hawaii and Alaska not shown above"
+       , fill = "") +
+  scale_fill_viridis(option = "magma", direction = -1)
+
+
+
+lata <- MapTable2$lat
+longa <- MapTable2$long
+
+leaflet(data = usa_states_leaflet) %>% 
+  addTiles() %>%
+  setView(-72.5, 42.4, zoom = 3) %>%
+  addMarkers(lat=lata, lng=longa, popup="Amherst College") %>%
+  # base state's fill color on proportion planning for in-person learning
+  addPolygons(fillColor = ~mypal(price)
+              , color = "#b2aeae"  #color needs to be in hex format
+              , fillOpacity = 0.7
+              , stroke = FALSE
+              , popup = paste0("State: ", usa_states_leaflet$names, "<br>"
+                             , "Number of schools reporting: "
+                             , round(usa_states_leaflet$n_schools,0), "<br>"
+                             , "Number of schools planning for in-person learning: "
+                             , round(usa_states_leaflet$n_inperson,0), "<br>"
+                             , "Proportion planning for in-person learning: "
+                             , round(usa_states_leaflet$prop_inperson,2))) %>%
+  # add legend explaining fill color
+   addLegend(pal = mypal, 
+            values = usa_states_leaflet$prop_inperson, 
+            position = "bottomright", 
+            title = "Proportion planning for<br>in-person learning<br>as of July 2019")
+
+
+
+
+# !!! THESE ARE NOT CORRECT FOR ALL LOCATIONS.  CAN YOU FIGURE OUT A WAY TO FIX IT?
+usa_states_leaflet$n_schools <- college_plans_state$n_schools
+usa_states_leaflet$n_inperson <- college_plans_state$n_inperson
+usa_states_leaflet$prop_inperson <- college_plans_state$prop_inperson
+
+# colorNumeric is a function from the leaflet package
+mypal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = usa_states_leaflet$prop_inperson
+)
+
+# identify Amherst College's location
+ac <- college_location %>%
+  filter(institution_name == "Amherst College")
+
+ac_lat <- ac$latitude_location_of_institution_hd2019
+ac_long <- ac$longitude_location_of_institution_hd2019
+
+# interactive map
+leaflet(data = usa_states_leaflet) %>% 
+  addTiles() %>%
+  setView(-72.5, 42.4, zoom = 5) %>%
+  addMarkers(lat=ac_lat, lng=ac_long, popup="Amherst College") %>%
+  ## fill color is not based on any variable.  Can you figure out how to map it to proportion 
+  ## planning for in-person learning?
+  addPolygons(fillColor = topo.colors(10, alpha = NULL)
+              , stroke = FALSE
+              , popup = paste0("State: ", usa_states_leaflet$names, "<br>"
+                             , "Number of schools reporting: "
+                             , round(usa_states_leaflet$n_schools,0), "<br>"
+                             , "Number of schools planning for in-person learning: "
+                             , round(usa_states_leaflet$n_inperson,0), "<br>"
+                             , "Proportion planning for in-person learning: "
+                             , round(usa_states_leaflet$prop_inperson,2)))
 
 
 
 
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
