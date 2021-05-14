@@ -350,11 +350,11 @@ BuildingPermits <- bind_rows(BP202002, BP202003, BP202004, BP202005, BP202006, B
   
 
 #Import Construction Material Index Data
-ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/PCU44414441.xls", range = "A11:B37") %>%
+ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/PCU44414441.xls", range = "A23:B37") %>%
   #Rename columns for legibility
   rename(
-    Date = "observation_date",
-    Material = "PCU44414441"
+    Date = "43831",
+    Material = "153.5"
     ) %>%
   #calculate percentage change and add column to join with BuildingPermits
   mutate(
