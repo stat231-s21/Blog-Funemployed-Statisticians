@@ -56,9 +56,7 @@ SalesCountDataLong <- SalesCountStateData %>%
 linegraph_data <- SalesCountDataLong %>%
   filter(date >= as.POSIXct("2019-06-30")) %>%
   group_by(date, region) %>%
-  summarize(region = region,
-            date = date,
-            sales_count = mean(sales_count))
+  summarize(sales_count = mean(sales_count, na.rm = TRUE))
 ```
 
 ## Interest vs Home Price (Scatter Plot)
