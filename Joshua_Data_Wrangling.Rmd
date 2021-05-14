@@ -326,6 +326,8 @@ ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/
     pct_chg = as.numeric(100 * (Construction_Material_Index - lag(Construction_Material_Index))/lag(Construction_Material_Index))
   ) %>%
   within(pct_chg[Construction_Material_Index == "234.6"] <- as.numeric('0'))
+
+write_csv(FullUnemp, file="Unemployment Shiny Application/FullUnemp.csv")
 ```
 
 # Visualizations

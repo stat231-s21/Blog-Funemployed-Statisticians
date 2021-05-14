@@ -14,23 +14,82 @@ library(tidyverse)
 ```
 
 # Introduction
+The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances. 
+
+Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. 
+
+We look to explore the single family real estate market and the impact of covid-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market and because commercial data is not publicly available.
+
+In order to examine such phenomena mid-pandemic, we seek to answer, ‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’ and ‘What explains this real estate market behavior?’
 
 # Overview of Analysis
+In order to analyze the impact of Covid on the real estate market, we first turn to the impact on national sales volume regarding SFH. Then we seek any differences between average home prices of the US and certain states. Then we seek to understand the real estate on a more granular level by analyzing how prices were impacted by state. This will help us understand how overall the supply and demand of the market affected the prices and quantities that homes are selling for.
+
+Once we realize the overall market effects, we examine how the real estate market has performed vs other markets. We do this by comparing the Home Price Index with the Consumer Price Index and the S&P 500. This will allow us to understand how the real estate market performed in comparison with the average cost of living and compared to the top 500 stocks in the US.
+
+Then we try to understand what developments caused the market to react in the way that it did. Two common allegations are that it is because interest rates are low and because construction costs are high. Thus we plotted the interest rate and home price to understand the relationship between interest rates and home prices. Then, we compared the percentage change between construction material costs and building permits approved to examine the relationship between construction costs and newly built homes. 
 
 # Data
-FRED and Zillow
+Our data was extracted from a variety of sources such as the Federal Reserve Bank of St. Louis, US Census, and Zillow. 
+
+The data for CPI, HPI, and S&P 500 came from the Federal Reserve Bank of St. Louis the FRED.
+[HPI](https://fred.stlouisfed.org/series/CSUSHPINSA)
+[CPI](https://fred.stlouisfed.org/series/USACPIALLMINMEI)
+[S&P 500](https://fred.stlouisfed.org/series/SP500)
+
+We found our data for the building permits came from the Building Permits Survey from the US Census data. This dataset provides data on the number of new housing units authorized by building permits. 
+The construction material index was sourced from the Federal Reserve Bank of St. Louis the FRED.
+[BPS](https://www.census.gov/construction/bps/)
+[Construction Materials Index](https://fred.stlouisfed.org/series/WPUSI012011)
+
 
 # National Sale Volume Difference Bar Graph
-
+```{r, echo=FALSE}
+summary(cars)
+```
 # US Average Home Price Area Graph
-
+```{r, echo=FALSE}
+summary(cars)
+```
 # Home Price by State, Interactive Spatial Map
-
+```{r, echo=FALSE}
+summary(cars)
+```
 # Housing Price Index vs CPI, Case-Schiller vs S&P 500 Line Graphs
+```{r, echo=FALSE}
+Indexplot <- CPIHPI %>%
+  ggplot(aes(x = Date, y = Index_Values, group = Index_Type, color = Index_Type)) +
+  geom_line() +
+  geom_point() +
+  ylab("Index Values") +
+  theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
+  labs(color = "Index Type") +
+  ggtitle("Consumer Price Index vs. Housing Price Index")
 
+SPplot <- ggplot(SPHomePrice, aes(x=Date, y=pct_chg, group = Index_Type, color = Index_Type)) +
+  geom_line() +
+  ylab("Percentage Change of Index") +
+  theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
+  labs(color = "Index Type") +
+  ggtitle("S&P 500 vs. Case Shiller Housing Price Index")
+```
 # Interest vs Home Price Scatterplot
-
+```{r, echo=FALSE}
+summary(cars)
+```
 # Construction Material Costs vs Building Permits Percentage Change Line Graph
+
+```{r, echo=FALSE}
+BPvCMplot <- BPvCM %>%
+  ggplot(aes(x=Date, y=pct_chg, group = Data, fill = Data)) +
+  geom_area() +
+  ylab("Percentage Change") +
+  theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
+  labs(fill = "Data") +
+  ggtitle("Difference between Building Permits Approved and Construction Material Price")
+
+BPvCMplot
+```
 
 # Conclusion and Limitations
 
@@ -40,17 +99,12 @@ FRED and Zillow
 **2. How well has the real estate market performed compared to other markets?**
 **3. What explains this real estate market behavior?**
 
+## Limitations
+
 ## Possible Next Steps
 
 # Citations
-
-
-
-## Header 2
-
-### Header 3
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For example, you can include **Bold** and _Italic_ and `Code` text.  For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+https://blog.firstam.com/economics/homeownership-remains-strongly-linked-to-wealth-building#:~:text=In%202019%2C%20housing%20wealth%20represented,that%20percentage%20was%20only%2034. 
 
 You should test out updating your GitHub Pages website:
 
@@ -59,68 +113,3 @@ You should test out updating your GitHub Pages website:
 - knit `index.Rmd` 
 - commit and push BOTH the `index.Rmd` and the `index.html` files
 - go to https://stat231-s21.github.io/Blog-Funemployed-Statisticians/ to see the published test document (this is publicly available!)
-
-## Including code and plots
-
-You can embed code as normal, for example:
-
-```{r cars}
-summary(cars)
-```
-
-Let's clean up the format of that output:
-
-```{r pretty, echo=FALSE, warning=FALSE, message=FALSE}
-library(kableExtra)
-summary(cars) %>%
-  kable(col.names = c("Speed", "Distance")
-        , row.names = F) %>%
-  kable_styling(bootstrap_options = "striped"
-                , full_width = F) %>%
-  row_spec(0, bold = T, underline = T) %>%
-  column_spec(1:2, width = "1.5in") 
-```
-
-In a study from the 1920s, fifty cars were used to see how the speed of the car and the distance taken to stop were related.  Speeds ranged between `r min(cars$speed)` and `r max(cars$speed)` mph.  Distances taken to stop ranged between `r min(cars$dist)` and `r max(cars$dist)` feet, with the middle 50% falling between `r as.numeric(quantile(cars$dist)[2])` and `r as.numeric(quantile(cars$dist)[4])` feet.  
-
-You can also embed plots as normal, for example:
-
-```{r figure1, echo=FALSE}
-ggplot(data = cars, aes(x = speed, y = dist)) + 
-  geom_point() + 
-  labs(x = "Speed of car (mph)"
-       , y = "Distance taken to stop (ft)"
-       , title = "cars data (1920s)")
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-## Including links and images
-
-You can include [Links](https://www.datadreaming.org/post/r-markdown-theme-gallery/) and images ![team logo](https://raw.githubusercontent.com/stat231-s21/Blog-Funemployed-Statisticians/main/images/s1g5-economics.jpg)
-
-You can embed a gif.
-
-![pugs](https://media.giphy.com/media/XHVmD4RyXgSjd8aUMb/giphy.gif)
-
-
-# You can even create tabs if you want! {.tabset .tabset-fade .tabset-pills}
-
-## Bulleted list
-
-You can make a bulleted list like this:
-
-- item 1
-- item 2
-- item 3
-
-
-## Numbered list
-
-You can make a numbered list like this
-
-1. First thing I want to say
-2. Second thing I want to say
-3. Third thing I want to say
-
