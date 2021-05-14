@@ -11,16 +11,24 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.align="center")
 library(tidyverse)
+library(readxl)
+```
+
+```{r, echo=FALSE, include=FALSE}
+#Importing Wrangled CSV Files for visualizations
+BPvCM <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/BPvCM.csv")
+CPIHPI <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/CPIHPI.csv")
+SPHomePrice <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/SPHomePrice.csv")
 ```
 
 # Introduction
-The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances. 
+The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances. Other studies show that homeownership leads to greater wealth-building in comparison to renting. Real estate and homeownership still seem like a very strong way to build wealth
 
 Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. 
 
 We look to explore the single family real estate market and the impact of covid-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market and because commercial data is not publicly available.
 
-In order to examine such phenomena mid-pandemic, we seek to answer, ‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’ and ‘What explains this real estate market behavior?’
+In order to examine such phenomena mid-pandemic, we seek to answer, _‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’ and ‘What explains this real estate market behavior?’_
 
 # Overview of Analysis
 In order to analyze the impact of Covid on the real estate market, we first turn to the impact on national sales volume regarding SFH. Then we seek any differences between average home prices of the US and certain states. Then we seek to understand the real estate on a more granular level by analyzing how prices were impacted by state. This will help us understand how overall the supply and demand of the market affected the prices and quantities that homes are selling for.
@@ -33,21 +41,23 @@ Then we try to understand what developments caused the market to react in the wa
 Our data was extracted from a variety of sources such as the Federal Reserve Bank of St. Louis, US Census, and Zillow. 
 
 The data for CPI, HPI, and S&P 500 came from the Federal Reserve Bank of St. Louis the FRED.
+
 [HPI](https://fred.stlouisfed.org/series/CSUSHPINSA)
 [CPI](https://fred.stlouisfed.org/series/USACPIALLMINMEI)
 [S&P 500](https://fred.stlouisfed.org/series/SP500)
 
 We found our data for the building permits came from the Building Permits Survey from the US Census data. This dataset provides data on the number of new housing units authorized by building permits. 
 The construction material index was sourced from the Federal Reserve Bank of St. Louis the FRED.
+
 [BPS](https://www.census.gov/construction/bps/)
 [Construction Materials Index](https://fred.stlouisfed.org/series/WPUSI012011)
 
 
-# National Sale Volume Difference Bar Graph
+# US National Sale Volume Changes
 ```{r, echo=FALSE}
 summary(cars)
 ```
-# US Average Home Price Area Graph
+# US Average Home Price Changes
 ```{r, echo=FALSE}
 summary(cars)
 ```
@@ -55,7 +65,7 @@ summary(cars)
 ```{r, echo=FALSE}
 summary(cars)
 ```
-# Housing Price Index vs CPI, Case-Schiller vs S&P 500 Line Graphs
+# Comparison of Housing Price Index, Consumer Price Inde, and S&P 500
 ```{r, echo=FALSE}
 Indexplot <- CPIHPI %>%
   ggplot(aes(x = Date, y = Index_Values, group = Index_Type, color = Index_Type)) +
@@ -66,18 +76,32 @@ Indexplot <- CPIHPI %>%
   labs(color = "Index Type") +
   ggtitle("Consumer Price Index vs. Housing Price Index")
 
-SPplot <- ggplot(SPHomePrice, aes(x=Date, y=pct_chg, group = Index_Type, color = Index_Type)) +
+Indexplot
+```
+
+The HPI has outperformed the CPI over the course of 20 years and certainly stands as an asset class that appreciates faster than inflation. Although we do see a large rise and fall between 2005-2012, we can see that the HPI has recovered even higher than the past peak. The housing market thus seems like a more volatile compared to the living expenses of the average US citizen. This indeed allows us to realize that investing in real estate is more likely than not to grow and is a better alternative to holding cash. However, we also look to see how real estate has performed compared to the stock market in the form of the S&P 500 index. 
+
+```{r, echo=FALSE}
+SPplot <- SPHomePrice %>%
+  ggplot(aes(x=Date, y=pct_chg, group = Index_Type, color = Index_Type)) +
   geom_line() +
   ylab("Percentage Change of Index") +
   theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
   labs(color = "Index Type") +
   ggtitle("S&P 500 vs. Case Shiller Housing Price Index")
+
+SPplot
 ```
-# Interest vs Home Price Scatterplot
+
+In comparison with the S&P 500, we can see that the HPI is much more stable compared to the volatility of the stock market. While the HPI averages around 3%, we can see that the S&P 500 grows at a 7% average. In this case, we can see that the top 500 stocks will perform better than the average house in the US. However, there are some caveats that need attention. First is that the S&P 500 tracks the top 500 stocks while the HPI tracks all home values. Thus, it is not the best comparison when comparing returns due to the fact the HPI considers personal residencies that do not try to achieve the returns of investment properties, while all S&P 500 companies are trying to achieve a high return. 
+
+The difference in volatility may be explained in the liquidity of the market. Stock are able to be bought and sold in a relatively quick manner while real estate may take weeks, months, or even years to buy or sell properties. Thus, market changes are much more pronounced in the stock market while changes may be slow to show in the real estate market. 
+
+# Interest and Home Price Relationship
 ```{r, echo=FALSE}
 summary(cars)
 ```
-# Construction Material Costs vs Building Permits Percentage Change Line Graph
+# Construction Material Costs and Building Permits Changes
 
 ```{r, echo=FALSE}
 BPvCMplot <- BPvCM %>%
@@ -91,19 +115,44 @@ BPvCMplot <- BPvCM %>%
 BPvCMplot
 ```
 
+Interestingly, we actually see that building permits increase when construction material has increased. This is a perplexing finding as we expect building permits to increase as construction material costs decrease. We expected this outcome because homebuilders can expect a higher return when the costs of building decrease, which incentivizes more home builders to build. Yet this was not the case. This may be because although construction material prices increased, sales price also increased accordingly, which invited more new builds. In addition, because the building permits are approved by the government, there may be a delay from when a home builder applies to build to when a home builder receives a permit. 
+
 # Conclusion and Limitations
 
 ## Answering Questions of Interest
 
 **1. How did the COVID-19 pandemic impact the real estate industry?**
+
+We observed that sales prices saw a slight dip, but rebounded and actually recorded record growth. Overall sales count also increased and the real estate market has seen strong growth throughout the pandemic. This was contrary to many people's belief that the market was to crash like 2008. However, we see that foreclosure protection as well as eviction protection, allows the market to stay robust. 
+
 **2. How well has the real estate market performed compared to other markets?**
+
+We found that, despite the pandemic, real estate has performed marketedly well in comparison to other assets. In comparison to the CPI, we were able to observe that real estate historically beat out inflation. However, in comparison to the S&P 500, it lacked the returns. However, it was much less volatile than stocks during distressed times as a stable investment. However, this may be due to the forbearance and foreclosure protection, so it will be interesting to see how the market develops once these protections have dissappeared.
+
+Yet this comparison does not factor in the benefits of owning real estate and the adjusted returns incorporating such benefits. The HPI shows the average appreciation of homes, but does not include the depreciation, tax benefits, cash flow, principal paydown, leverage, and forced appreciation that homeowners enjoy.
+
+This also does not include the 1031 exchange, which allows homeowners defer their taxes to later years and sell their property to buy a greater or equal value home. This in turn allows the investor to invest pre-tax cash to achieve higher returns with a bigger bankroll.
+
+Thus, while some investors may consider real estate an inferior investment to stocks based on these indexes, but fail to realize the unrecorded benefits of real estate.
+
 **3. What explains this real estate market behavior?**
+
+We actually found evidence against the theory that construction material price increases decrease the amount of homebuilders trying to build a home. This was a perplexing finding, but we were able to realize that there may be delays of when builders apply and get approved to build homes. 
 
 ## Limitations
 
+One limitation to our study is that the real estate market does not have perfect information and includes a large off-market section. We are unable to track these transactions and thus does not provide the full picture of all real estate transactions. However, we are able to track those listed on MLS and sites such as Zillow and Redfin, which allow us to graspe a general sense of the real estate market. 
+
 ## Possible Next Steps
 
+Possible next steps would to understand the debt markets of real estate and see the impact of covid on mortgages. For instance, we can track missed and late payment percentages and see how Covid impacted those numbers. In addition, we could see how the total mortgage debt of the US was impacted by covid and if the mortgage growth rate was irregular during this period. 
+
+Another angle that would be interesting to look at are different asset classes. We focused on the SFH market, but there are various other asset classes such as multifamily, industrial, retail, hotels, land, and office. However, publicly available data is limited so a subscription to Loopnet or a commercial Multiple Listing Service (MLS) would be extremely helpful in this instance. 
+
+Although this was an overall analysis of the US real estate market, geography plays a massive part. Thus, it may be more interesting to look into specific states, counties, and neighborhoods to understand how the pandemic has affected local markets. 
+
 # Citations
+
 https://blog.firstam.com/economics/homeownership-remains-strongly-linked-to-wealth-building#:~:text=In%202019%2C%20housing%20wealth%20represented,that%20percentage%20was%20only%2034. 
 
 You should test out updating your GitHub Pages website:
