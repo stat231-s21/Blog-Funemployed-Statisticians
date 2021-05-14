@@ -1,0 +1,118 @@
+---
+title: "daniel_visualizations"
+output: html_document
+---
+
+# DATA WRANGLING
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(robotstxt)
+library(rvest)
+library(knitr)
+library(janitor)
+library(viridis)
+library(lubridate)
+library(ggplot2)
+
+knitr::opts_chunk$set(
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+```
+
+## National Sales Volume Difference over Time (Box Plot)
+
+```{r}
+#get Salecount data. Want the points for different cities, no average. 
+#remove unnecessary columns
+SalesCountData <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/sales_count.csv"))
+
+SalesCountData <- SalesCountData %>%
+  filter(SizeRank != 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionType")
+
+#assign states to regions
+northeast <- c("NY", "NJ", "PA", "CT", "ME", "MA", "NH", "RI", "VT")
+midwest <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MO", "MN", "NE", "ND", "SD")
+south <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "WV", "DC",
+          "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
+west <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
+
+SalesCountStateData <- SalesCountData %>%
+  mutate(region = case_when(StateName %in% northeast ~ "NORTHEAST",
+                            StateName %in% midwest ~ "MIDWEST",
+                            StateName %in% south ~ "SOUTH",
+                            StateName %in% west ~ "WEST",
+                            TRUE ~ "")) %>%
+  rename(city = RegionName,
+         state = StateName)
+        
+#pivot for different date values
+SalesCountDataLong <- SalesCountStateData %>%
+  pivot_longer(c(-"city", -"state", -"region"), names_to = "date", values_to = "sales_count")%>%
+  mutate(date =  as.Date(date, format= "%Y-%m-%d")) 
+
+
+linegraph_data <- SalesCountDataLong %>%
+  filter(date >= as.POSIXct("2019-06-30")) %>%
+  group_by(date, region) %>%
+  summarize(region = region,
+            date = date,
+            sales_count = mean(sales_count))
+```
+
+## Interest vs Home Price (Scatter Plot)
+
+```{r}
+#Get FRED Data
+FRED_Data <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/FRED_interest.csv")) %>%
+  rename(date = DATE, interest_rate = MORTGAGE15US) %>%
+  mutate(date =  as.Date(date, format= "%Y-%m-%d"), 
+         year = year(date),
+         month = month(date)) %>%
+  filter(date > "2008-04-30") %>%
+  group_by(month, year) %>%
+  summarize(interest_rate = mean(interest_rate))
+
+#Zillow Data on median home price monthly. Want US average
+MonthlySalePriceData <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/median_monthly.csv"))
+USaverageprice <- MonthlySalePriceData %>%
+  filter(SizeRank == 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionName", -"RegionType", -"StateName") %>%
+  pivot_longer(col = everything(), names_to = "date", values_to = "median_price") %>%
+  mutate(date = as.Date(date, format= "%Y-%m-%d"),
+         year = year(date),
+         month = month(date),
+         median_price_thousand = median_price / 1000)
+
+
+#combine the two datasets
+scatter_data <- USaverageprice %>%
+  inner_join(FRED_Data, by = c("year", "month")) %>%
+  select(-"date")
+```
+
+# VISUALIZATIONS
+
+## National Sales Volume Difference over Time (Line Plot)
+
+Problem is that we have several points for the same region on the same date. Use groupby and summarize to average out the values so there is only one point per x-value per region, and also figure out what's going on with the date limit to after June 2019. 
+```{r}
+linegraph_data%>%
+ggplot(aes(x=date, y=sales_count, color = region)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Home Sales Count by US Region over Time") +
+  labs(x = "Date", y = "Sales Count", color = "Region of the US")
+```
+
+## Interest vs Home Price (Scatter Plot)
+
+```{r}
+ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thousand)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  ggtitle("Interest Rate vs Home Price in the United States") +
+  scale_y_continuous(labels = function(x) paste0("$", x)) +
+  labs(x = "Mortgage Interest Rates (%)", y = "Median Sale Price (in Thousands)")
+```
