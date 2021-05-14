@@ -17,53 +17,71 @@ library(readxl)
 ## HPI vs CPi and SP&500 vs Case Shiller HPI
 
 ```{r}
-#Import CPI
-CPI <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/USACPIALLMINMEI.xls", range = "A11:B265") %>%
+#Import CPI data
+CPI <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/USACPIALLMINMEI.xls", range = "A11:B265") %>%
+    #Renaming columns to make sense
   rename(Date = "observation_date", ConsumerPriceIndex = "USACPIALLMINMEI") %>%
+    #formatting the class of this column for visualization
   mutate(Date = as.Date(as.character(Date), format = "%Y-%m-%d"))
-  
-  group_by()
   
 #Import HPI
-HPI <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/CSUSHPINSA.xls", range = "A11:B265") %>%
+HPI <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/CSUSHPINSA.xls", range = "A11:B265") %>%
+    #Renaming columns to make sense
   rename(Date = "observation_date", HousingPriceIndex = "CSUSHPINSA") %>%
+    #formatting the class of this column for visualization
   mutate(Date = as.Date(as.character(Date), format = "%Y-%m-%d"))
 
-#Bind Together
+#Join two tables together
 CPIHPI <- HPI %>%
   left_join(CPI, by = "Date") %>%
+  #pivot to long dataset for visualization
   pivot_longer(!Date, values_to = "Index_Values", names_to = "Index_Type")
 
-#Read S&P vs HPI data into R
+#Import S&P 500 data with Case Shiller Home Price
 SPHomePrice <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/sp-500-vs-home-prices.xls.xlsx") %>%
+  #Rename columns to legible names
   rename(DateTime = "S&P 500 vs. Home Prices", "SP_500" = "...2", "Case_Shiller_Home_Price_Index" = "...3") %>%
+  #Filter for 2 years worth of data from 2019-2021
   filter(DateTime > "2019-02-01") %>%
+  #filtering out one row in which does not contain observation
   filter(DateTime != "DateTime") %>%
+  #formattting columns to make sure they work in computations and visualizations
   mutate(
     Date = as.Date(DateTime, format = "%Y-%m-%d"),
     MY = format(Date, format = "%Y-%m"),
     SP_500 = as.double(SP_500),
     Case_Shiller_Home_Price_Index = as.double(Case_Shiller_Home_Price_Index)
     ) %>%
+  #removing unnecessary column
   select(-DateTime) %>%
+  #Pivot to long dataset for visualization
   pivot_longer(!Date & !MY, names_to = "Index_Type", values_to = "Index_Value") %>%
+  #filtering out NA values
   filter(Index_Value != "NA") %>%
+  #Group by month and year to find datapoint for last day of each month
   group_by(MY) %>%
   filter(Date == max(Date)) %>%
+  #ungroup to allow computations for percentage change
   ungroup() %>%
+  #arrange by index type and date to order data correctly
   arrange(Index_Type, Date) %>%
+  #Calculate percentage change
   mutate(
     pct_chg = as.double(100 * (Index_Value - lag(Index_Value))/lag(Index_Value))
          ) %>%
+  #Change initial percentage change to 0 for visualization
   within(pct_chg[Date == '2019-02-28'] <- as.numeric('0'))
+
 ```
 
 ## Building Permit vs Construction Material Index Percentage Change
 
 ```{r}
-# Extracting Building Permit Data
-BP202002 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202002.xls", range = "A8:G74") %>%
+#Import exel sheet with observations only
+BP202002 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202002.xls", range = "A8:G74") %>%
+  #rename column for legibility
   rename(Region = "...1") %>%
+  #filter out NA observations and non-state observations
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
   filter(!Region == "New England Division") %>%   
@@ -78,10 +96,13 @@ BP202002 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   filter(!Region == "West Region") %>%   
   filter(!Region == "Mountain Division") %>%   
   filter(!Region == "Pacific Division") %>%
+  #pivot to long data for visualization
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  #change class of column for visualization
   mutate(Date = as.Date("02-01-2020", "%m-%d-%Y"))
 
-BP202003 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202003.xls", range = "A8:G74") %>%
+#Continuted for one whole year
+BP202003 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202003.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -100,7 +121,7 @@ BP202003 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("03-01-2020", "%m-%d-%Y"))
 
-BP202004 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202004.xls", range = "A8:G74") %>%
+BP202004 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202004.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -119,7 +140,7 @@ BP202004 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("04-01-2020", "%m-%d-%Y"))
 
-BP202005 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202005.xls", range = "A8:G74") %>%
+BP202005 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202005.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -138,7 +159,7 @@ BP202005 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("05-01-2020", "%m-%d-%Y"))
 
-BP202006 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202006.xls", range = "A8:G74") %>%
+BP202006 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202006.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -157,7 +178,7 @@ BP202006 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("06-01-2020", "%m-%d-%Y"))
 
-BP202007 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202007.xls", range = "A8:G74") %>%
+BP202007 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202007.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -176,7 +197,7 @@ BP202007 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("07-01-2020", "%m-%d-%Y"))
 
-BP202008 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202008.xls", range = "A8:G74") %>%
+BP202008 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202008.xls", range = "A8:G74") %>%
  rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -195,7 +216,7 @@ BP202008 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("08-01-2020", "%m-%d-%Y"))
 
-BP202009 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202009.xls", range = "A8:G74") %>%
+BP202009 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202009.xls", range = "A8:G74") %>%
  rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -214,7 +235,7 @@ BP202009 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("09-01-2020", "%m-%d-%Y"))
 
-BP202010 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202010.xls", range = "A8:G74") %>%
+BP202010 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202010.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -233,7 +254,7 @@ BP202010 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("10-01-2020", "%m-%d-%Y"))
 
-BP202011 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202011.xls", range = "A8:G74") %>%
+BP202011 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202011.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -252,7 +273,7 @@ BP202011 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("11-01-2020", "%m-%d-%Y"))
 
-BP202012 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202012.xls", range = "A8:G74") %>%
+BP202012 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202012.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -271,7 +292,7 @@ BP202012 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("12-01-2020", "%m-%d-%Y"))
 
-BP202101 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202101.xls", range = "A8:G74") %>%
+BP202101 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202101.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -290,7 +311,7 @@ BP202101 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
   pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
   mutate(Date = as.Date("01-01-2021", "%m-%d-%Y"))
 
-BP202102 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/statemonthly_202102.xls", range = "A8:G74") %>%
+BP202102 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202102.xls", range = "A8:G74") %>%
   rename(Region = "...1") %>%
   filter(Total != "NA") %>%
   filter(!Region == "Northeast Region") %>%
@@ -311,28 +332,54 @@ BP202102 <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_S
 
 #Building Permits binding together into one dataset
 BuildingPermits <- bind_rows(BP202002, BP202003, BP202004, BP202005, BP202006, BP202007, BP202008, BP202009, BP202010, BP202011, BP202012, BP202101, BP202102) %>%
+  #Filter for total US numbers
   filter(Housing_Type == "Total") %>%
+  #Column no longer needed
   select(-Housing_Type) %>%
-  arrange(Region) %>%
-  mutate(pct_chg = as.numeric(100 * (Count - lag(Count))/lag(Count))) %>%
-  within(pct_chg[Date == '2020-02-01'] <- as.numeric('0'))
+  #filter for US total numbers
+  filter(Region == "United States") %>%
+  #Calculate percentage change and add Data column to merge with ConstructionMaterial
+  mutate(
+    pct_chg = as.numeric(100 * (Count - lag(Count))/lag(Count)),
+    Data = "Building Permits"
+         ) %>%
+  #set initial percentage change to 0
+  within(pct_chg[Date == '2020-02-01'] <- as.numeric('0')) %>%
+  #remove unneccessary columns
+  select(-Count, -Region)
   
 
-#Import Construction Material 
-ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Data-Science-Repo/Blog/Excel_Sheets/Construction Materials.xls", range = "A30:B42", col_names = FALSE) %>%
-  rename(Date = "...1",
-         Construction_Material_Index = "...2") %>%
+#Import Construction Material Index Data
+ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/PCU44414441.xls", range = "A11:B37") %>%
+  #Rename columns for legibility
+  rename(
+    Date = "observation_date",
+    Material = "PCU44414441"
+    ) %>%
+  #calculate percentage change and add column to join with BuildingPermits
   mutate(
-    pct_chg = as.numeric(100 * (Construction_Material_Index - lag(Construction_Material_Index))/lag(Construction_Material_Index))
+    pct_chg = as.numeric(100 * (Material - lag(Material))/lag(Material)),
+    Data = "Construction Material"
   ) %>%
-  within(pct_chg[Construction_Material_Index == "234.6"] <- as.numeric('0'))
+  #set initial percentage change to 0
+  within(pct_chg[Material == "234.6"] <- as.numeric('0')) %>%
+  #Remove unncessary columns
+  select(-Material)
 
-write_csv(FullUnemp, file="Unemployment Shiny Application/FullUnemp.csv")
+#Bind these two together for visualization
+BPvCM <- ConstructionMaterial %>%
+  bind_rows(BuildingPermits)
+
+#Create csv files for easy importation into visualizations
+write_csv(BPvCM, file="Datasets/BPvCM.csv")
+write_csv(CPIHPI, file="Datasets/CPIHPI.csv")
+write_csv(SPHomePrice, file="Datasets/SPHomePrice.csv")
 ```
 
 # Visualizations
 ```{r}
-SPplot <- ggplot(SPHomePrice, aes(x=Date, y=pct_chg, group = Index_Type, color = Index_Type)) +
+SPplot <- SPHomePrice %>%
+  ggplot(aes(x=Date, y=pct_chg, group = Index_Type, color = Index_Type)) +
   geom_line() +
   ylab("Percentage Change of Index") +
   theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
@@ -352,24 +399,13 @@ Indexplot <- CPIHPI %>%
 
 Indexplot
 
-BPplot <- BuildingPermits %>%
-  filter(Region == "United States") %>%
-  ggplot(aes(x = Date, y = pct_chg)) + 
-  geom_line() +
-  geom_point() +
-  ylab("Percentage Change of Approved Building Permits") +
-  theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
-  ggtitle("Percentage Change of Approved Building Permits")
-
-BPplot
-
-CMplot <- ConstructionMaterial %>%
-  ggplot(aes(x = Date, y = pct_chg)) + 
-  geom_line() +
+BPvCMplot <- BPvCM %>%
+  ggplot(aes(x=Date, y=pct_chg, group = Data, fill = Data)) +
   geom_area() +
-  ylab("Percentage Change of Construction Material Index") +
+  ylab("Percentage Change") +
   theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
-  ggtitle("Percentage Change of Construction Material Index")
+  labs(fill = "Data") +
+  ggtitle("Difference between Building Permits Approved and Construction Material Price")
 
-CMplot
+BPvCMplot
 ```
