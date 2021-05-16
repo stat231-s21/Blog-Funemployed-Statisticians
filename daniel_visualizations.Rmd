@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 ```{r}
 #get Salecount data. Want the points for different cities, no average. 
 #remove unnecessary columns
-SalesCountData <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/sales_count.csv"))
+SalesCountData <- read_csv(paste0("/home/class21/dchoe21/git/Blog-Funemployed-Statisticians/Datasets/sales_count.csv"))
 
 SalesCountData <- SalesCountData %>%
   filter(SizeRank != 0) %>%
@@ -63,7 +63,7 @@ linegraph_data <- SalesCountDataLong %>%
 
 ```{r}
 #Get FRED Data
-FRED_Data <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/FRED_interest.csv")) %>%
+FRED_Data <- read_csv(paste0("/home/class21/dchoe21/git/Blog-Funemployed-Statisticians/Datasets/FRED_interest.csv")) %>%
   rename(date = DATE, interest_rate = MORTGAGE15US) %>%
   mutate(date =  as.Date(date, format= "%Y-%m-%d"), 
          year = year(date),
@@ -73,7 +73,7 @@ FRED_Data <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/FRED_in
   summarize(interest_rate = mean(interest_rate))
 
 #Zillow Data on median home price monthly. Want US average
-MonthlySalePriceData <- read_csv(paste0("/home/class21/dchoe21/git/Daniel-Choe/blog/median_monthly.csv"))
+MonthlySalePriceData <- read_csv(paste0("/home/class21/dchoe21/git/Blog-Funemployed-Statisticians/Datasets/median_monthly"))
 USaverageprice <- MonthlySalePriceData %>%
   filter(SizeRank == 0) %>%
   select(-"RegionID", -"SizeRank", -"RegionName", -"RegionType", -"StateName") %>%
