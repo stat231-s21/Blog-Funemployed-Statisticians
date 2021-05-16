@@ -12,6 +12,17 @@ knitr::opts_chunk$set(
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(readxl)
+library(robotstxt)
+library(knitr)
+library(janitor)
+library(rvest)
+library(dplyr)
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+library(leaflet)
+library(leaflet.extras)
+library(maps)
 ```
 
 ## HPI vs CPi and SP&500 vs Case Shiller HPI
@@ -362,7 +373,7 @@ ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-S
     Data = "Construction Material"
   ) %>%
   #set initial percentage change to 0
-  within(pct_chg[Material == "234.6"] <- as.numeric('0')) %>%
+  within(pct_chg[Material == "152.2"] <- as.numeric('0')) %>%
   #Remove unncessary columns
   select(-Material)
 
@@ -408,4 +419,231 @@ BPvCMplot <- BPvCM %>%
   ggtitle("Difference between Building Permits Approved and Construction Material Price")
 
 BPvCMplot
+```
+
+#Ethan 
+```{r cars}
+valueTableState<- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_homevalue.csv")
+
+valueTableUS <- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_USMetro.csv")
+
+valueTableUS2 <- valueTableUS %>%
+  select(3,5,282:308) %>%
+  filter(RegionName == "United States")
+
+valueTable2 <- valueTableState%>%
+  select(3,5,282:308)
+
+FullTable <- valueTable2 %>%
+  full_join(valueTableUS2)
+
+  FullTableLong <- FullTable %>%
+  pivot_longer(c(-"RegionName",-"StateName"), names_to = "date" , values_to = "price")
+
+  USTable <- FullTableLong %>%
+    filter (RegionName == "United States")
+  
+write_csv(FullTableLong, file="Datasets/FullTableLong.csv")
+```
+
+
+```{r}
+northeast <- c("NY", "NJ", "PA", "CT", "ME", "MA", "NH", "RI", "VT")
+midwest <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MO", "MN", "NE", "ND", "SD")
+south <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "WV", "DC",
+          "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
+west <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
+
+BoxPlotTable <- FullTableLong %>%
+  filter(date == "X2019.03.31" | date == "X2020.03.31" | date == "X2021.03.31")
+
+BoxPlotData <- BoxPlotTable %>%
+  mutate(region = case_when(StateName %in% northeast ~ "NORTHEAST",
+                            StateName %in% midwest ~ "MIDWEST",
+                            StateName %in% south ~ "SOUTH",
+                            StateName %in% west ~ "WEST",
+                            RegionName == "united states" ~ "America Total",
+                            TRUE ~ "")) %>%
+  rename(city = RegionName,
+         state = StateName)
+
+options(scipen=10000)
+
+
+BoxPlot <- BoxPlotData %>%
+  ggplot(aes(x=region, y=price, fill=region)) +
+    geom_boxplot() +
+    facet_wrap(~date) +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("Housing Prices by Region, Year by Year") +
+    xlab("Region") 
+
+  BoxPlot
+
+write_csv(BoxPlotData, file="Datasets/BoxPlotData.csv")
+```
+
+
+```{r}
+
+MapTable <- FullTableLong %>%
+    filter(date == "X2019.01.31")
+
+usa_states <- map_data(map = "state"
+                       , region = ".")
+
+
+MapTable <- MapTable %>%
+  mutate("RegionName" = tolower(RegionName))
+#creating new datset
+MapTable2 <- MapTable %>%
+  inner_join(usa_states, by = c("RegionName" = "region"))
+
+
+options(scipen=10000)
+
+usa_states_leaflet <- map("state", fill = TRUE, plot = FALSE)
+class(usa_states_leaflet)
+usa_states_leaflet$names
+
+#Takes all state names and puts them in a dataframe
+usa_states_leaflet2 <- as.data.frame(usa_states_leaflet$names) %>%
+#Renames variable for clarity
+  rename(RegionName = 'usa_states_leaflet$names') %>%
+#Isolates the state name and discards information regarding region within state
+  separate(col = RegionName, into = c("RegionName2", "extra"), sep = ":", remove = FALSE)
+
+#Combines "blank map" with data on housing
+FullMap <- usa_states_leaflet2 %>%
+  left_join(MapTable, by= c("RegionName2" = "RegionName"))
+
+
+mypal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = MapTable$price
+)
+
+leaflet(data = usa_states_leaflet) %>%
+  addTiles() %>%
+  setView(-90,42.4, zoom = 3.5) %>%
+  # base state's fill color on proportion planning for in-person learning
+  addPolygons(fillColor = ~mypal(FullMap$price)
+              , color = "#FFFF33"  #color needs to be in hex format
+              , fillOpacity = 0.7
+              , stroke = FALSE
+              , popup = paste0("State: ", FullMap$RegionName2, "<br>"
+                             , "Average Price: $"
+                             , FullMap$price, "<br>" )) %>%
+  # add legend explaining fill color
+   addLegend(pal = mypal,
+            values = FullMap$price,
+            position = "bottomright",
+            title = "Home Prices by State")
+
+write_csv(usa_states_leaflet, file="Datasets/usa_states_leaflet.csv")
+write_csv(FullMap, file="Datasets/FullMap.csv")
+```
+
+## National Sales Volume Difference over Time (Box Plot)
+
+```{r}
+#get Salecount data. Want the points for different cities, no average. 
+#remove unnecessary columns
+SalesCountData <- read_csv(paste0("/home/class21/dchoe21/git/Blog-Funemployed-Statisticians/Datasets/sales_count.csv"))
+
+SalesCountData <- SalesCountData %>%
+  filter(SizeRank != 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionType")
+
+#assign states to regions
+northeast <- c("NY", "NJ", "PA", "CT", "ME", "MA", "NH", "RI", "VT")
+midwest <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MO", "MN", "NE", "ND", "SD")
+south <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "WV", "DC",
+          "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
+west <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
+
+SalesCountStateData <- SalesCountData %>%
+  mutate(region = case_when(StateName %in% northeast ~ "NORTHEAST",
+                            StateName %in% midwest ~ "MIDWEST",
+                            StateName %in% south ~ "SOUTH",
+                            StateName %in% west ~ "WEST",
+                            TRUE ~ "")) %>%
+  rename(city = RegionName,
+         state = StateName)
+        
+#pivot for different date values
+SalesCountDataLong <- SalesCountStateData %>%
+  pivot_longer(c(-"city", -"state", -"region"), names_to = "date", values_to = "sales_count")%>%
+  mutate(date =  as.Date(date, format= "%Y-%m-%d")) 
+
+
+linegraph_data <- SalesCountDataLong %>%
+  filter(date >= as.POSIXct("2019-06-30")) %>%
+  group_by(date, region) %>%
+  summarize(sales_count = mean(sales_count, na.rm = TRUE))
+
+write_csv(linegraph_data, file="Datasets/linegraph_data.csv")
+```
+
+## Interest vs Home Price (Scatter Plot)
+
+```{r}
+#Get FRED Data
+FRED_Data <- read_csv(paste0("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/FRED_interest.csv")) %>%
+  rename(date = DATE, interest_rate = MORTGAGE15US) %>%
+  mutate(date =  as.Date(date, format= "%Y-%m-%d"), 
+         year = year(date),
+         month = month(date)) %>%
+  filter(date > "2008-04-30") %>%
+  group_by(month, year) %>%
+  summarize(interest_rate = mean(interest_rate))
+
+#Zillow Data on median home price monthly. Want US average
+MonthlySalePriceData <- read_csv(paste0("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/median_monthly.csv"))
+USaverageprice <- MonthlySalePriceData %>%
+  filter(SizeRank == 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionName", -"RegionType", -"StateName") %>%
+  pivot_longer(col = everything(), names_to = "date", values_to = "median_price") %>%
+  mutate(date = as.Date(date, format= "%Y-%m-%d"),
+         year = year(date),
+         month = month(date),
+         median_price_thousand = median_price / 1000)
+
+
+#combine the two datasets
+scatter_data <- USaverageprice %>%
+  inner_join(FRED_Data, by = c("year", "month")) %>%
+  select(-"date")
+
+write_csv(scatter_data, file="Datasets/scatter_data.csv")
+```
+
+# VISUALIZATIONS
+
+## National Sales Volume Difference over Time (Line Plot)
+
+Problem is that we have several points for the same region on the same date. Use groupby and summarize to average out the values so there is only one point per x-value per region, and also figure out what's going on with the date limit to after June 2019. 
+```{r}
+linegraph_data%>%
+ggplot(aes(x=date, y=sales_count, color = region)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Home Sales Count by US Region over Time") +
+  labs(x = "Date", y = "Sales Count", color = "Region of the US")
+```
+
+##Interest vs Home Price (Scatter Plot)
+
+```{r}
+ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thousand)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  ggtitle("Interest Rate vs Home Price in the United States") +
+  scale_y_continuous(labels = function(x) paste0("$", x)) +
+  labs(x = "Mortgage Interest Rates (%)", y = "Median Sale Price (in Thousands)")
 ```

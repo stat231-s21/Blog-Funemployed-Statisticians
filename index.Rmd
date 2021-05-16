@@ -12,6 +12,18 @@ output:
 knitr::opts_chunk$set(echo = TRUE, fig.align="center")
 library(tidyverse)
 library(readxl)
+library(robotstxt)
+library(knitr)
+library(janitor)
+library(rvest)
+library(dplyr)
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+library(leaflet)
+library(leaflet.extras)
+library(maps)
+library(lubridate)
 ```
 
 ```{r, echo=FALSE, include=FALSE}
@@ -19,14 +31,18 @@ library(readxl)
 BPvCM <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/BPvCM.csv")
 CPIHPI <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/CPIHPI.csv")
 SPHomePrice <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/SPHomePrice.csv")
+BoxPlotData <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/BoxPlotData.csv")
+FullTableLong <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/FullTableLong.csv")
+linegraph_data <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/linegraph_data.csv")
+scatter_data <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/scatter_data.csv")
 ```
 
 # Introduction
-The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances. Other studies show that homeownership leads to greater wealth-building in comparison to renting. Real estate and homeownership still seem like a very strong way to build wealth
+The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances. Other studies show that homeownership leads to greater wealth-building in comparison to renting. Thus, real estate and homeownership is still one of the best ways to build wealth, but is it really a good investment and does it perform well throughout economic downturns? Specifically how did it perform throughout the COVID-19 pandemic?
 
-Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. 
+Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. This is increasing the barrier to entry as the amount of capital needed to purchase real estate is also growing.
 
-We look to explore the single family real estate market and the impact of covid-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market and because commercial data is not publicly available.
+We look to explore the single family real estate market and the impact of covid-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market, lowest barrier to entry, and because commercial data is not publicly available.
 
 In order to examine such phenomena mid-pandemic, we seek to answer, _‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’ and ‘What explains this real estate market behavior?’_
 
@@ -55,15 +71,83 @@ The construction material index was sourced from the Federal Reserve Bank of St.
 
 # US National Sale Volume Changes
 ```{r, echo=FALSE}
-summary(cars)
+linegraph_data %>%
+ggplot(aes(x=date, y=sales_count, color = region)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Home Sales Count by US Region over Time") +
+  labs(x = "Date", y = "Sales Count", color = "Region of the US")
 ```
 # US Average Home Price Changes
 ```{r, echo=FALSE}
-summary(cars)
+BoxPlot <- BoxPlotData %>%
+  ggplot(aes(x=region, y=price, fill=region)) +
+    geom_boxplot() +
+    facet_wrap(~date) +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("Housing Prices by Region, Year by Year") +
+    xlab("Region") 
 ```
 # Home Price by State, Interactive Spatial Map
 ```{r, echo=FALSE}
-summary(cars)
+MapTable <- FullTableLong %>%
+    filter(date == "X2019.01.31")
+
+usa_states <- map_data(map = "state"
+                       , region = ".")
+
+
+MapTable <- MapTable %>%
+  mutate("RegionName" = tolower(RegionName))
+#creating new datset
+MapTable2 <- MapTable %>%
+  inner_join(usa_states, by = c("RegionName" = "region"))
+
+
+options(scipen=10000)
+
+usa_states_leaflet <- map("state", fill = TRUE, plot = FALSE)
+class(usa_states_leaflet)
+usa_states_leaflet$names
+
+#Takes all state names and puts them in a dataframe
+usa_states_leaflet2 <- as.data.frame(usa_states_leaflet$names) %>%
+#Renames variable for clarity
+  rename(RegionName = 'usa_states_leaflet$names') %>%
+#Isolates the state name and discards information regarding region within state
+  separate(col = RegionName, into = c("RegionName2", "extra"), sep = ":", remove = FALSE)
+
+#Combines "blank map" with data on housing
+FullMap <- usa_states_leaflet2 %>%
+  left_join(MapTable, by= c("RegionName2" = "RegionName"))
+
+
+mypal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = MapTable$price
+)
+
+leaflet(data = usa_states_leaflet) %>%
+  addTiles() %>%
+  setView(-90,42.4, zoom = 3.5) %>%
+  # base state's fill color on proportion planning for in-person learning
+  addPolygons(fillColor = ~mypal(FullMap$price)
+              , color = "#FFFF33"  #color needs to be in hex format
+              , fillOpacity = 0.7
+              , stroke = FALSE
+              , popup = paste0("State: ", FullMap$RegionName2, "<br>"
+                             , "Average Price: $"
+                             , FullMap$price, "<br>" )) %>%
+  # add legend explaining fill color
+   addLegend(pal = mypal,
+            values = FullMap$price,
+            position = "bottomright",
+            title = "Home Prices by State")
 ```
 # Comparison of Housing Price Index, Consumer Price Inde, and S&P 500
 ```{r, echo=FALSE}
@@ -99,7 +183,12 @@ The difference in volatility may be explained in the liquidity of the market. St
 
 # Interest and Home Price Relationship
 ```{r, echo=FALSE}
-summary(cars)
+ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thousand)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  ggtitle("Interest Rate vs Home Price in the United States") +
+  scale_y_continuous(labels = function(x) paste0("$", x)) +
+  labs(x = "Mortgage Interest Rates (%)", y = "Median Sale Price (in Thousands)")
 ```
 # Construction Material Costs and Building Permits Changes
 
