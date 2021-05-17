@@ -42,7 +42,7 @@ The median homeowner has 40 times the household wealth of a renter, according to
 
 Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. This is increasing the barrier to entry as the amount of capital needed to purchase real estate is also growing.
 
-We look to explore the single family real estate market and the impact of covid-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market, lowest barrier to entry, and because commercial data is not publicly available.
+We look to explore the single family real estate market and the impact of COVID-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market, lowest barrier to entry, and because commercial data is not publicly available.
 
 In order to examine such phenomena mid-pandemic, we seek to answer, _‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’ and ‘What explains this real estate market behavior?’_
 
@@ -56,7 +56,11 @@ Then we try to understand what developments caused the market to react in the wa
 # Data
 Our data was extracted from a variety of sources such as the Federal Reserve Bank of St. Louis, US Census, and Zillow. 
 
-The data for CPI, HPI, and S&P 500 came from the Federal Reserve Bank of St. Louis the FRED.
+The data for national home sales count and median home sale price came from Zillow.
+
+[Zillow](https://www.zillow.com/research/data/)
+
+The data for CPI, HPI, and S&P 500 came from the Federal Reserve Bank of St. Louis, also known as the FRED.
 
 [HPI](https://fred.stlouisfed.org/series/CSUSHPINSA)
 [CPI](https://fred.stlouisfed.org/series/USACPIALLMINMEI)
@@ -79,6 +83,8 @@ ggplot(aes(x=date, y=sales_count, color = region)) +
   ggtitle("Home Sales Count by US Region over Time") +
   labs(x = "Date", y = "Sales Count", color = "Region of the US")
 ```
+
+We tracked the patterns in national sale volume over time, from July 2019 to March 2021. From this visualization, we can see that national sales hit a sharp downturn and reached its lowest point in Feb-March 2020, then began to spike back up in April and into the summer. The first trend can be explained by the nationwide lockdown, as all businesses (e.g. real estate agencies) were forced to shut down or operate remotely, and fear about the pandemic and its transmission were at an all-time high. The second trend can be explained by the “suburban shift” and exodus to low-tax states, as the remote economy no longer required proximity to urban centers and encouraged workers to move to larger homes. These trends can be seen across different regions of the US - each of the four lines follow a similar pattern. Such similarity indicates that these trends are nationwide, and thus likely caused by nationwide occurrences (like a global pandemic). However, we see another downturn in Jan 2021, as surging home prices (due to low supply and high demand) made home purchases less affordable for the average consumer. 
 
 # US Average Home Price Changes
 
@@ -198,6 +204,8 @@ ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thou
   scale_y_continuous(labels = function(x) paste0("$", x)) +
   labs(x = "Mortgage Interest Rates (%)", y = "Median Sale Price (in Thousands)")
 ```
+
+The downward-sloping line of best fit demonstrates the negative correlation between interest rates and home price. Looking at monthly data since 2008, as interest rates rose, median home price generally fell. We can infer that this is due to the attractiveness of spending and investing during periods of low interest rates - loans for large investments like real estate will accrue less interest and therefore prove less costly over time during periods of low interest rates. Thus, demand for real estate increases, pushing up prices. This relationship can help explain the surge in the real estate market during the pandemic - as interest rates fell, investments in real estate became more attractive, especially during a time when remote work and stay-at-home orders encouraged moving to larger spaces with lower taxes.
 
 # Construction Material Costs and Building Permits Changes
 
