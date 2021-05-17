@@ -38,7 +38,7 @@ scatter_data <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticia
 ```
 
 # Introduction
-The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances. Other studies show that homeownership leads to greater wealth-building in comparison to renting. Thus, real estate and homeownership is still one of the best ways to build wealth, but is it really a good investment and does it perform well throughout economic downturns? Specifically how did it perform throughout the COVID-19 pandemic?
+The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances (Kushi 2020). Other studies show that homeownership leads to greater wealth-building in comparison to renting. Thus, real estate and homeownership is still one of the best ways to build wealth, but is it really a good investment and does it perform well throughout economic downturns? Specifically how did it perform throughout the COVID-19 pandemic?
 
 Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. This is increasing the barrier to entry as the amount of capital needed to purchase real estate is also growing.
 
@@ -243,11 +243,15 @@ Thus, while some investors may consider real estate an inferior investment to st
 
 **3. What explains this real estate market behavior?**
 
+Our findings on the negative correlation between interest rate and sale price indicate that lower interest rates lead to higher demand for real estate and therefore higher sale prices. Thus, the Fed's response in early 2020 to support the US economy during the lockdown by slashing down to near-zero interest rates could explain the surge in sales count and sales price (Cheng et al. 2021).
+
 We actually found evidence against the theory that construction material price increases decrease the amount of homebuilders trying to build a home. This was a perplexing finding, but we were able to realize that there may be delays of when builders apply and get approved to build homes. 
 
 ## Limitations
 
 One limitation to our study is that the real estate market does not have perfect information and includes a large off-market section. We are unable to track these transactions and thus does not provide the full picture of all real estate transactions. However, we are able to track those listed on MLS and sites such as Zillow and Redfin, which allow us to graspe a general sense of the real estate market. 
+
+Our construction data and findings could also be limited by government bureaucracy. Government and market move at different paces, the government might approve permits at different dates than the application. Thus, building permits approved may not yet accurately reflect the larger claims we believe to be true for supply of homes.
 
 ## Possible Next Steps
 
@@ -259,12 +263,6 @@ Although this was an overall analysis of the US real estate market, geography pl
 
 # Citations
 
-https://blog.firstam.com/economics/homeownership-remains-strongly-linked-to-wealth-building#:~:text=In%202019%2C%20housing%20wealth%20represented,that%20percentage%20was%20only%2034. 
+Odeta Kushi. "Homeownership Remains Strongly Linked to Wealth-Building." Nov 5, 2020.  https://blog.firstam.com/economics/homeownership-remains-strongly-linked-to-wealth-building/ 
 
-You should test out updating your GitHub Pages website:
-
-- clone your group's blog project repo in RStudio
-- update "Your Project Title Here" to a new title in the YAML header
-- knit `index.Rmd` 
-- commit and push BOTH the `index.Rmd` and the `index.html` files
-- go to https://stat231-s21.github.io/Blog-Funemployed-Statisticians/ to see the published test document (this is publicly available!)
+Cheng et al. "What’s the Fed doing in response to the COVID-19 crisis? What more could it do?" March 30, 2021 https://www.brookings.edu/research/fed-response-to-covid19/
