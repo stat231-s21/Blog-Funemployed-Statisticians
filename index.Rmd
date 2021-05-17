@@ -70,6 +70,7 @@ The construction material index was sourced from the Federal Reserve Bank of St.
 
 
 # US National Sale Volume Changes
+
 ```{r, echo=FALSE}
 linegraph_data %>%
 ggplot(aes(x=date, y=sales_count, color = region)) +
@@ -78,9 +79,11 @@ ggplot(aes(x=date, y=sales_count, color = region)) +
   ggtitle("Home Sales Count by US Region over Time") +
   labs(x = "Date", y = "Sales Count", color = "Region of the US")
 ```
+
 # US Average Home Price Changes
+
 ```{r, echo=FALSE}
-BoxPlot <- BoxPlotData %>%
+BoxPlotData %>%
   ggplot(aes(x=region, y=price, fill=region)) +
     geom_boxplot() +
     facet_wrap(~date) +
@@ -93,7 +96,9 @@ BoxPlot <- BoxPlotData %>%
     ggtitle("Housing Prices by Region, Year by Year") +
     xlab("Region") 
 ```
+
 # Home Price by State, Interactive Spatial Map
+
 ```{r, echo=FALSE}
 MapTable <- FullTableLong %>%
     filter(date == "X2019.01.31")
@@ -149,7 +154,9 @@ leaflet(data = usa_states_leaflet) %>%
             position = "bottomright",
             title = "Home Prices by State")
 ```
+
 # Comparison of Housing Price Index, Consumer Price Inde, and S&P 500
+
 ```{r, echo=FALSE}
 Indexplot <- CPIHPI %>%
   ggplot(aes(x = Date, y = Index_Values, group = Index_Type, color = Index_Type)) +
@@ -182,6 +189,7 @@ In comparison with the S&P 500, we can see that the HPI is much more stable comp
 The difference in volatility may be explained in the liquidity of the market. Stock are able to be bought and sold in a relatively quick manner while real estate may take weeks, months, or even years to buy or sell properties. Thus, market changes are much more pronounced in the stock market while changes may be slow to show in the real estate market. 
 
 # Interest and Home Price Relationship
+
 ```{r, echo=FALSE}
 ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thousand)) +
   geom_point() +
@@ -190,6 +198,7 @@ ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thou
   scale_y_continuous(labels = function(x) paste0("$", x)) +
   labs(x = "Mortgage Interest Rates (%)", y = "Median Sale Price (in Thousands)")
 ```
+
 # Construction Material Costs and Building Permits Changes
 
 ```{r, echo=FALSE}
