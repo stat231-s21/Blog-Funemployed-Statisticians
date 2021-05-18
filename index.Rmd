@@ -38,6 +38,8 @@ linegraph_data <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statistic
 scatter_data <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/scatter_data.csv")
 ```
 
+![](/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/images/RE.jpg)
+
 # Introduction
 
 The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances (Kushi 2020). Other studies show that homeownership leads to greater wealth-building in comparison to renting. Thus, real estate and homeownership is still one of the best ways to build wealth, but is it really a good investment and does it perform well throughout economic downturns? Specifically how did it perform throughout the COVID-19 pandemic?
@@ -109,7 +111,9 @@ BoxPlot <- BoxPlotData %>%
     ) +
     ggtitle("Housing Prices by Region, Year by Year") +
     xlab("Region") +
-    ylab("Price")
+    ylab("Price") +
+   scale_y_continuous()
+
 
 #turn the text on x-axis 50 degrees
 BoxPlot <- BoxPlot + theme(axis.text.x = element_text(angle = 50, hjust = 1))
@@ -118,9 +122,11 @@ BoxPlot <- BoxPlot + theme(axis.text.x = element_text(angle = 50, hjust = 1))
 BoxPlot
 ```
 
+We created a box plot to track the average housing prices over the past three years by region using data from Zillow’s research database. This visualization provides us with some compelling information about the affect of the pandemic on the housing market. The first thing we noticed is that the pandemic turned real estate into a seller’s market. Not only did housing prices in each region increase during the pandemic, but also each region grew at a faster rate during the pandemic, from 2020 to 2021, than in the year leading up to pandemic. That means the pandemic actually is correlated with the speeding up of the increase in real estate prices. This effect happened nationwide, as prices did not decrease in any region. Moreover, we see that the most growth came from the west region.
+
 # Home Price by State, Interactive Spatial Map
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 #Create the table that holds the data to create my map
   MapTable <- FullTableLong %>%
     filter(date == "X2021.03.31" | date == "X2020.03.31")
@@ -161,8 +167,6 @@ options(scipen=10000)
 
 #Create the leaflet and assign the names
 usa_states_leaflet <- map("state", fill = TRUE, plot = FALSE)
-class(usa_states_leaflet)
-usa_states_leaflet$names
 
 #Takes all state names and puts them in a dataframe
 usa_states_leaflet2 <- as.data.frame(usa_states_leaflet$names) %>%
@@ -205,7 +209,9 @@ PriceMap <- leaflet(data = usa_states_leaflet) %>%
 PriceMap
 ```
 
-# Comparison of Housing Price Index, Consumer Price Inde, and S&P 500
+This map makes one thing clear: location is everything. Average house prices range by a shocking amount. The average price of a home in California is $644,000 compared to $115,000 in West Virginia (California is over 4 times more expensive). The expensive housing in California can be explained both by the lack of supply that cannot keep up with the demand for homes and the heavier regulation of land which bumps up prices. In addition, this map corroborate with the box plot that the West is the most expensive region in America, and that both coasts are significantly more expensive that the middle of the country. By clicking on each state, you can see how much the prices have increased since last year. North Dakota had the least year over year growth at a rate of 3.7% and Idaho had the most growth since last year at a rate of 22.9%. This is due to the increasing cost of building materials and swelling demand in Idaho. In every state, the pandemic year provided housing prices with growth with no states deviating from this trend.
+
+# Comparison of Housing Price Index, Consumer Price Index, and S&P 500
 
 ```{r, echo=FALSE}
 Indexplot <- CPIHPI %>%
@@ -240,7 +246,7 @@ The difference in volatility may be explained in the liquidity and efficiency of
 
 # Interest and Home Price Relationship
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thousand)) +
   geom_point() +
   geom_smooth(se=FALSE) +
@@ -268,6 +274,8 @@ BPvCMplot
 Interestingly, we actually see that building permits increase when construction material has increased. This is a perplexing finding as we expect building permits to increase as construction material costs decrease. We expected this outcome because homebuilders can expect a higher return when the costs of building decrease, which incentivizes more home builders to build. Yet this was not the case. This may be because although construction material prices increased, sales price also increased accordingly, which invited more new builds. In addition, the amount of building permits approved may increase demand for construction material, which could make these two variables move together. Lastly, because the building permits are approved by the government, there may be a delay from when a home builder applies to build to when a home builder receives a permit.
 
 # Conclusion and Limitations
+
+![](/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/images/REp.jpg)
 
 ## Answering Questions of Interest
 
