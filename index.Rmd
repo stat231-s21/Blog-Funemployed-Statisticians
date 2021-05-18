@@ -6,6 +6,7 @@ output:
   rmdformats::readthedown:
     thumbnails: false
     highlight: NULL
+    urlcolor: blue
 ---
 
 ```{r setup, include=FALSE}
@@ -27,6 +28,16 @@ library(lubridate)
 library(stringr)
 ```
 
+```{css, echo=FALSE} 
+h1, h2, h3, h4, h5, h6, legend {
+ color: #0179c3
+}
+
+#sidebar h2 {
+ background-color: #0179c3;
+}
+```
+
 ```{r, echo=FALSE, include=FALSE}
 #Importing Wrangled CSV Files for visualizations
 BPvCM <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/BPvCM.csv")
@@ -46,7 +57,7 @@ The median homeowner has 40 times the household wealth of a renter, according to
 
 This Covid-19 related recession seems different in comparison to previous recessions as previous recessions saw a steep decline in price. Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. This is increasing the barrier to entry as the amount of capital needed to purchase real estate is also growing. 
 
-In order to examine such phenomena mid-pandemic, we seek to answer, _‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’ and ‘What explains this real estate market behavior?’_
+In order to examine such phenomena mid-pandemic, we seek to answer, _‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’_ and _‘What explains this real estate market behavior?’_
 
 # Overview of Analysis
 
@@ -111,8 +122,7 @@ BoxPlot <- BoxPlotData %>%
     ) +
     ggtitle("Housing Prices by Region, Year by Year") +
     xlab("Region") +
-    ylab("Price") +
-   scale_y_continuous()
+    scale_y_continuous(name = "Price", labels = scales::label_dollar())
 
 
 #turn the text on x-axis 50 degrees
@@ -246,7 +256,7 @@ The difference in volatility may be explained in the liquidity and efficiency of
 
 # Interest and Home Price Relationship
 
-```{r, echo=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE}
 ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thousand)) +
   geom_point() +
   geom_smooth(se=FALSE) +
@@ -303,11 +313,11 @@ One limitation to our study is that the real estate market does not have perfect
 
 Our construction data and findings could also be limited by government bureaucracy. Government and market move at different paces, the government might approve permits at different dates than the application. Thus, building permits approved may not yet accurately reflect the larger claims we believe to be true for supply of homes.
 
-Finally, the HPI does not accurately reflect the return on investment because it only factors in home price appreciation. 
+Finally, the HPI does not accurately reflect the return on investment because it only factors in home price appreciation. As mentioned before, the HPI does not include the tax benefits, loan pay down, leverage, forced equity, and cash flow. Although appreciation is a significant amount, these factors can vary wildly and will influence the return immensely. Thus the HPI and S&P 500 comparison has some limitations as the HPI doesnt provide the full picture, but the conclusions of volatility still stand. 
 
 ## Possible Next Steps
 
-Possible next steps would to understand the debt markets of real estate and see the impact of covid on mortgages. For instance, we can track missed and late payment percentages and see how Covid impacted those numbers. In addition, we could see how the total mortgage debt of the US was impacted by covid and if the mortgage growth rate was irregular during this period. 
+Possible next steps would to understand the debt markets of real estate and see the impact of Covid on mortgages. For instance, we can track missed and late payment percentages and see how Covid impacted those numbers. In addition, we could see how the total mortgage debt of the US was impacted by Covid and if the mortgage growth rate was irregular during this period. This will also help us to understand the impact of forebearance and foreclosure protection, alongside eviction protection.
 
 Another angle that would be interesting to look at are different asset classes. We focused on the SFH market, but there are various other asset classes such as multifamily, industrial, retail, hotels, land, and office. However, publicly available data is limited so a subscription to Loopnet or a commercial Multiple Listing Service (MLS) would be extremely helpful in this instance. 
 
