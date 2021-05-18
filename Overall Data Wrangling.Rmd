@@ -424,10 +424,10 @@ BPvCMplot
 #Ethan 
 ```{r}
 #download state by state housing prices
-valueTableState<- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_homevalue.csv")
+valueTableState<- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Zillow_homevalue.csv")
 
 #download national and city housing prices
-valueTableUS <- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_USMetro.csv")
+valueTableUS <- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Zillow_USMetro.csv")
 
 #select certain dates for price data, and only include the US data, none of the cities
 valueTableUS2 <- valueTableUS %>%
@@ -585,13 +585,12 @@ PriceMap <- leaflet(data = usa_states_leaflet) %>%
 
 PriceMap
 
-write_csv(usa_states_leaflet, file="Datasets/usa_states_leaflet.csv")
 write_csv(FullMap, file="Datasets/FullMap.csv")
 ```
 
 
 
-## National Sales Volume Difference over Time (Box Plot)
+## National Sales Volume Difference over Time 
 
 ```{r}
 #get Salecount data. Want the points for different cities, no average. 
