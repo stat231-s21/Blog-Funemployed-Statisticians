@@ -1,0 +1,691 @@
+---
+title: "Josh_DataWrangling"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+```
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(robotstxt)
+library(knitr)
+library(janitor)
+library(rvest)
+library(dplyr)
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+library(leaflet)
+library(leaflet.extras)
+library(maps)
+```
+
+## HPI vs CPi and SP&500 vs Case Shiller HPI
+
+```{r}
+#Import CPI data
+CPI <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/USACPIALLMINMEI.xls", range = "A11:B265") %>%
+    #Renaming columns to make sense
+  rename(Date = "observation_date", ConsumerPriceIndex = "USACPIALLMINMEI") %>%
+    #formatting the class of this column for visualization
+  mutate(Date = as.Date(as.character(Date), format = "%Y-%m-%d"))
+  
+#Import HPI
+HPI <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/CSUSHPINSA.xls", range = "A11:B265") %>%
+    #Renaming columns to make sense
+  rename(Date = "observation_date", HousingPriceIndex = "CSUSHPINSA") %>%
+    #formatting the class of this column for visualization
+  mutate(Date = as.Date(as.character(Date), format = "%Y-%m-%d"))
+
+#Join two tables together
+CPIHPI <- HPI %>%
+  left_join(CPI, by = "Date") %>%
+  #pivot to long dataset for visualization
+  pivot_longer(!Date, values_to = "Index_Values", names_to = "Index_Type")
+
+#Import S&P 500 data with Case Shiller Home Price
+SPHomePrice <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/sp-500-vs-home-prices.xls.xlsx") %>%
+  #Rename columns to legible names
+  rename(DateTime = "S&P 500 vs. Home Prices", "SP_500" = "...2", "Case_Shiller_Home_Price_Index" = "...3") %>%
+  #Filter for 2 years worth of data from 2019-2021
+  filter(DateTime > "2019-02-01") %>%
+  #filtering out one row in which does not contain observation
+  filter(DateTime != "DateTime") %>%
+  #formattting columns to make sure they work in computations and visualizations
+  mutate(
+    Date = as.Date(DateTime, format = "%Y-%m-%d"),
+    MY = format(Date, format = "%Y-%m"),
+    SP_500 = as.double(SP_500),
+    Case_Shiller_Home_Price_Index = as.double(Case_Shiller_Home_Price_Index)
+    ) %>%
+  #removing unnecessary column
+  select(-DateTime) %>%
+  #Pivot to long dataset for visualization
+  pivot_longer(!Date & !MY, names_to = "Index_Type", values_to = "Index_Value") %>%
+  #filtering out NA values
+  filter(Index_Value != "NA") %>%
+  #Group by month and year to find datapoint for last day of each month
+  group_by(MY) %>%
+  filter(Date == max(Date)) %>%
+  #ungroup to allow computations for percentage change
+  ungroup() %>%
+  #arrange by index type and date to order data correctly
+  arrange(Index_Type, Date) %>%
+  #Calculate percentage change
+  mutate(
+    pct_chg = as.double(100 * (Index_Value - lag(Index_Value))/lag(Index_Value))
+         ) %>%
+  #Change initial percentage change to 0 for visualization
+  within(pct_chg[Date == '2019-02-28'] <- as.numeric('0'))
+
+```
+
+## Building Permit vs Construction Material Index Percentage Change
+
+```{r}
+#Import exel sheet with observations only
+BP202002 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202002.xls", range = "A8:G74") %>%
+  #rename column for legibility
+  rename(Region = "...1") %>%
+  #filter out NA observations and non-state observations
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  #pivot to long data for visualization
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  #change class of column for visualization
+  mutate(Date = as.Date("02-01-2020", "%m-%d-%Y"))
+
+#Continuted for one whole year
+BP202003 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202003.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("03-01-2020", "%m-%d-%Y"))
+
+BP202004 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202004.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("04-01-2020", "%m-%d-%Y"))
+
+BP202005 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202005.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("05-01-2020", "%m-%d-%Y"))
+
+BP202006 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202006.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("06-01-2020", "%m-%d-%Y"))
+
+BP202007 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202007.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("07-01-2020", "%m-%d-%Y"))
+
+BP202008 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202008.xls", range = "A8:G74") %>%
+ rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("08-01-2020", "%m-%d-%Y"))
+
+BP202009 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202009.xls", range = "A8:G74") %>%
+ rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("09-01-2020", "%m-%d-%Y"))
+
+BP202010 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202010.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("10-01-2020", "%m-%d-%Y"))
+
+BP202011 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202011.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("11-01-2020", "%m-%d-%Y"))
+
+BP202012 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202012.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("12-01-2020", "%m-%d-%Y"))
+
+BP202101 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202101.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("01-01-2021", "%m-%d-%Y"))
+
+BP202102 <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/statemonthly_202102.xls", range = "A8:G74") %>%
+  rename(Region = "...1") %>%
+  filter(Total != "NA") %>%
+  filter(!Region == "Northeast Region") %>%
+  filter(!Region == "New England Division") %>%   
+  filter(!Region == "Middle Atlantic Division") %>%   
+  filter(!Region == "Midwest Region") %>%   
+  filter(!Region == "East North Central Division") %>%   
+  filter(!Region == "West North Central Division") %>%   
+  filter(!Region == "South Region") %>%   
+  filter(!Region == "South Atlantic Division") %>%   
+  filter(!Region == "East South Central Division") %>%   
+  filter(!Region == "West South Central Division") %>%   
+  filter(!Region == "West Region") %>%   
+  filter(!Region == "Mountain Division") %>%   
+  filter(!Region == "Pacific Division") %>%
+  pivot_longer(cols = !Region, names_to = "Housing_Type", values_to = "Count") %>%
+  mutate(Date = as.Date("02-01-2021", "%m-%d-%Y"))
+
+#Building Permits binding together into one dataset
+BuildingPermits <- bind_rows(BP202002, BP202003, BP202004, BP202005, BP202006, BP202007, BP202008, BP202009, BP202010, BP202011, BP202012, BP202101, BP202102) %>%
+  #Filter for total US numbers
+  filter(Housing_Type == "Total") %>%
+  #Column no longer needed
+  select(-Housing_Type) %>%
+  #filter for US total numbers
+  filter(Region == "United States") %>%
+  #Calculate percentage change and add Data column to merge with ConstructionMaterial
+  mutate(
+    pct_chg = as.numeric(100 * (Count - lag(Count))/lag(Count)),
+    Data = "Building Permits"
+         ) %>%
+  #set initial percentage change to 0
+  within(pct_chg[Date == '2020-02-01'] <- as.numeric('0')) %>%
+  #remove unneccessary columns
+  select(-Count, -Region)
+  
+
+#Import Construction Material Index Data
+ConstructionMaterial <- read_excel("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/Joshua/PCU44414441.xls", range = "A23:B37") %>%
+  #Rename columns for legibility
+  rename(
+    Date = "43831",
+    Material = "153.5"
+    ) %>%
+  #calculate percentage change and add column to join with BuildingPermits
+  mutate(
+    pct_chg = as.numeric(100 * (Material - lag(Material))/lag(Material)),
+    Data = "Construction Material"
+  ) %>%
+  #set initial percentage change to 0
+  within(pct_chg[Material == "152.2"] <- as.numeric('0')) %>%
+  #Remove unncessary columns
+  select(-Material)
+
+#Bind these two together for visualization
+BPvCM <- ConstructionMaterial %>%
+  bind_rows(BuildingPermits)
+
+#Create csv files for easy importation into visualizations
+write_csv(BPvCM, file="Datasets/BPvCM.csv")
+write_csv(CPIHPI, file="Datasets/CPIHPI.csv")
+write_csv(SPHomePrice, file="Datasets/SPHomePrice.csv")
+```
+
+# Visualizations
+```{r}
+SPplot <- SPHomePrice %>%
+  ggplot(aes(x=Date, y=pct_chg, group = Index_Type, color = Index_Type)) +
+  geom_line() +
+  ylab("Percentage Change of Index") +
+  theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
+  labs(color = "Index Type") +
+  ggtitle("S&P 500 vs. Case Shiller Housing Price Index")
+            
+SPplot
+
+Indexplot <- CPIHPI %>%
+  ggplot(aes(x = Date, y = Index_Values, group = Index_Type, color = Index_Type)) +
+  geom_line() +
+  geom_point() +
+  ylab("Index Values") +
+  theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
+  labs(color = "Index Type") +
+  ggtitle("Consumer Price Index vs. Housing Price Index")
+
+Indexplot
+
+BPvCMplot <- BPvCM %>%
+  ggplot(aes(x=Date, y=pct_chg, group = Data, fill = Data)) +
+  geom_area() +
+  ylab("Percentage Change") +
+  theme(legend.position="bottom", legend.background = element_rect(fill="lightblue", size=0.5, linetype="solid")) +
+  labs(fill = "Data") +
+  ggtitle("Difference between Building Permits Approved and Construction Material Price")
+
+BPvCMplot
+```
+
+#Ethan 
+```{r}
+#download state by state housing prices
+valueTableState<- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_homevalue.csv")
+
+#download national and city housing prices
+valueTableUS <- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_USMetro.csv")
+
+#select certain dates for price data, and only include the US data, none of the cities
+valueTableUS2 <- valueTableUS %>%
+  select(3,5,282:308) %>%
+  filter(RegionName == "United States")
+
+#select certain dates for price data after 2019
+valueTable2 <- valueTableState%>%
+  select(3,5,282:308)
+
+#Combine the overall US data with state by state data
+FullTable <- valueTable2 %>%
+  full_join(valueTableUS2)
+
+#Pivot the data frame to a long data style
+  FullTableLong <- FullTable %>%
+  pivot_longer(c(-"RegionName",-"StateName"), names_to = "date" , values_to = "price")
+  
+  #Create a table that only has US data
+  USTable <- FullTableLong %>%
+    filter (RegionName == "United States")
+  
+write_csv(FullTableLong, file="Datasets/FullTableLong.csv")
+```
+
+
+```{r}
+#Categorize each state within the region they are in
+northeast <- c("NY", "NJ", "PA", "CT", "ME", "MA", "NH", "RI", "VT")
+midwest <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MO", "MN", "NE", "ND", "SD")
+south <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "WV", "DC",
+          "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
+west <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
+
+#filter the data to include the date that I want to include in the box plot
+BoxPlotTable <- FullTableLong %>%
+  filter(date == "X2019.03.31" | date == "X2020.03.31" | date == "X2021.03.31")
+
+#Add a variable that includes which region each state is in
+BoxPlotData <- BoxPlotTable %>%
+  mutate(
+    region = case_when(StateName %in% northeast ~ "NORTHEAST",
+                            StateName %in% midwest ~ "MIDWEST",
+                            StateName %in% south ~ "SOUTH",
+                            StateName %in% west ~ "WEST",
+                            RegionName == "United States" ~ "US",
+                            TRUE ~ "")
+    ) %>%
+  rename(city = RegionName,
+         state = StateName) %>%
+  mutate_at("date", str_replace, "X", "")
+
+#change the axis from scientific notation to normal numbers
+options(scipen=10000)
+
+#Create the box plot
+BoxPlot <- BoxPlotData %>%
+  ggplot(aes(x=region, y=price, fill=region)) +
+    geom_boxplot() +
+    facet_wrap(~date) +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("Housing Prices by Region, Year by Year") +
+    xlab("Region")  +
+    ylab("Price")
+
+#turn the text on x-axis 50 degrees
+BoxPlot <- BoxPlot + theme(axis.text.x = element_text(angle = 50, hjust = 1))
+
+  BoxPlot
+
+write_csv(BoxPlotData, file="Datasets/BoxPlotData.csv")
+```
+
+
+```{r}
+#Create the table that holds the data to create my map
+  MapTable <- FullTableLong %>%
+    filter(date == "X2021.03.31" | date == "X2020.03.31")
+
+#create a variable that calculates the percent change from 2020 to 2021
+  MapTableNext <- MapTable %>%
+    group_by(RegionName) %>%
+      mutate(PercentChange = round(((price - lag(price))/lag(price))*100, 3)) %>%
+      filter(date == "X2021.03.31")
+
+  #Create the variable that holds US state map data
+usa_states <- map_data(map = "state"
+                       , region = ".")
+#Revise the table to only include the data points wanted for the map
+  MapTable <- MapTable %>%
+    filter(date == "X2021.03.31")
+
+#Mutate the data names in the MapTable so they line up with the names in the
+  #leaflet
+MapTable <- MapTable %>%
+  mutate("RegionName" = tolower(RegionName))
+
+#creating new dataset that joins the graphs together
+MapTable2 <- MapTable %>%
+  inner_join(usa_states, by = c("RegionName" = "region"))
+
+#Mutate the data names in the MapTableNexr so they line up with the names in the
+#leaflet
+MapTableNext <- MapTableNext %>%
+  mutate("RegionName" = tolower(RegionName))
+options(scipen=10000)
+
+#Create the leaflet and assign the names
+usa_states_leaflet <- map("state", fill = TRUE, plot = FALSE)
+class(usa_states_leaflet)
+usa_states_leaflet$names
+
+#Takes all state names and puts them in a dataframe
+usa_states_leaflet2 <- as.data.frame(usa_states_leaflet$names) %>%
+#Renames variable for clarity
+  rename(RegionName = 'usa_states_leaflet$names') %>%
+#Isolates the state name and discards information regarding region within state
+  separate(col = RegionName, into = c("RegionName2", "extra"), sep = ":",
+           remove = FALSE)
+
+#Combines "blank map" with data on housing prices
+FullMap <- usa_states_leaflet2 %>%
+  left_join(MapTableNext, by= c("RegionName2" = "RegionName"))
+
+#Sets up the color palate for the map
+mypal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = MapTable$price
+)
+
+#creates the leaflet map of housing prices in the US
+PriceMap <- leaflet(data = usa_states_leaflet) %>%
+  addTiles() %>%
+  setView(-90,42.4, zoom = 3.5) %>%
+  # base state's fill color on housing price
+  addPolygons(fillColor = ~mypal(FullMap$price)
+              , color = "#FFFF33"  #hex format of color
+              , fillOpacity = 0.9
+              , stroke = FALSE
+              #determines what will pop up when a state is clicked
+              , popup = paste0("State: ", FullMap$RegionName2, "<br>"
+                             , "Average Price as of March, 2021: $", FullMap$price, "<br>"
+                             ,"Year over year price change: ", FullMap$PercentChange, "%<br>"
+                              )) %>%
+  # add legend explaining fill color
+   addLegend(pal = mypal,
+            values = FullMap$price,
+            position = "bottomright",
+            title = "Home Prices by State as of March 31, 2021")
+
+PriceMap
+
+write_csv(usa_states_leaflet, file="Datasets/usa_states_leaflet.csv")
+write_csv(FullMap, file="Datasets/FullMap.csv")
+```
+
+
+
+## National Sales Volume Difference over Time (Box Plot)
+
+```{r}
+#get Salecount data. Want the points for different cities, no average. 
+#remove unnecessary columns
+SalesCountData <- read_csv(paste0("/home/class21/dchoe21/git/Blog-Funemployed-Statisticians/Datasets/sales_count.csv"))
+
+SalesCountData <- SalesCountData %>%
+  filter(SizeRank != 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionType")
+
+#assign states to regions
+northeast <- c("NY", "NJ", "PA", "CT", "ME", "MA", "NH", "RI", "VT")
+midwest <- c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MO", "MN", "NE", "ND", "SD")
+south <- c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "WV", "DC",
+          "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX")
+west <- c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", "CA", "HI", "OR", "WA")
+
+SalesCountStateData <- SalesCountData %>%
+  mutate(region = case_when(StateName %in% northeast ~ "NORTHEAST",
+                            StateName %in% midwest ~ "MIDWEST",
+                            StateName %in% south ~ "SOUTH",
+                            StateName %in% west ~ "WEST",
+                            TRUE ~ "")) %>%
+  rename(city = RegionName,
+         state = StateName)
+        
+#pivot for different date values
+SalesCountDataLong <- SalesCountStateData %>%
+  pivot_longer(c(-"city", -"state", -"region"), names_to = "date", values_to = "sales_count")%>%
+  mutate(date =  as.Date(date, format= "%Y-%m-%d")) 
+
+
+linegraph_data <- SalesCountDataLong %>%
+  filter(date >= as.POSIXct("2019-06-30")) %>%
+  group_by(date, region) %>%
+  summarize(sales_count = mean(sales_count, na.rm = TRUE))
+
+write_csv(linegraph_data, file="Datasets/linegraph_data.csv")
+```
+
+## Interest vs Home Price (Scatter Plot)
+
+```{r}
+#Get FRED Data
+FRED_Data <- read_csv(paste0("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/FRED_interest.csv")) %>%
+  rename(date = DATE, interest_rate = MORTGAGE15US) %>%
+  mutate(date =  as.Date(date, format= "%Y-%m-%d"), 
+         year = year(date),
+         month = month(date)) %>%
+  filter(date > "2008-04-30") %>%
+  group_by(month, year) %>%
+  summarize(interest_rate = mean(interest_rate))
+
+#Zillow Data on median home price monthly. Want US average
+MonthlySalePriceData <- read_csv(paste0("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Datasets/median_monthly.csv"))
+USaverageprice <- MonthlySalePriceData %>%
+  filter(SizeRank == 0) %>%
+  select(-"RegionID", -"SizeRank", -"RegionName", -"RegionType", -"StateName") %>%
+  pivot_longer(col = everything(), names_to = "date", values_to = "median_price") %>%
+  mutate(date = as.Date(date, format= "%Y-%m-%d"),
+         year = year(date),
+         month = month(date),
+         median_price_thousand = median_price / 1000)
+
+
+#combine the two datasets
+scatter_data <- USaverageprice %>%
+  inner_join(FRED_Data, by = c("year", "month")) %>%
+  select(-"date")
+
+write_csv(scatter_data, file="Datasets/scatter_data.csv")
+```
+
+# VISUALIZATIONS
+
+## National Sales Volume Difference over Time (Line Plot)
+
+Problem is that we have several points for the same region on the same date. Use groupby and summarize to average out the values so there is only one point per x-value per region, and also figure out what's going on with the date limit to after June 2019. 
+```{r}
+linegraph_data%>%
+ggplot(aes(x=date, y=sales_count, color = region)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Home Sales Count by US Region over Time") +
+  labs(x = "Date", y = "Sales Count", color = "Region of the US")
+```
+
+##Interest vs Home Price (Scatter Plot)
+
+```{r}
+ggplot(data=scatter_data, mapping = aes(x = interest_rate, y = median_price_thousand)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  ggtitle("Interest Rate vs Home Price in the United States") +
+  scale_y_continuous(labels = function(x) paste0("$", x)) +
+  labs(x = "Mortgage Interest Rates (%)", y = "Median Sale Price (in Thousands)")
+```

@@ -24,6 +24,7 @@ library(leaflet)
 library(leaflet.extras)
 library(maps)
 library(lubridate)
+library(stringr)
 ```
 
 ```{r, echo=FALSE, include=FALSE}
@@ -38,15 +39,17 @@ scatter_data <- read_csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticia
 ```
 
 # Introduction
+
 The median homeowner has 40 times the household wealth of a renter, according to the 2019 Survey of Consumer Finances, a triennial survey that collects detailed accounts of households’ finances (Kushi 2020). Other studies show that homeownership leads to greater wealth-building in comparison to renting. Thus, real estate and homeownership is still one of the best ways to build wealth, but is it really a good investment and does it perform well throughout economic downturns? Specifically how did it perform throughout the COVID-19 pandemic?
 
-Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. This is increasing the barrier to entry as the amount of capital needed to purchase real estate is also growing.
-
-We look to explore the single family real estate market and the impact of COVID-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market, lowest barrier to entry, and because commercial data is not publicly available.
+This Covid-19 related recession seems different in comparison to previous recessions as previous recessions saw a steep decline in price. Despite flashbacks of the 2008 financial crisis and recessionary concerns due to the pandemic, the real estate frenzy has reignited after a short downturn. Many houses are selling well over asking price due to heavy competition and single family home inventory is at ⅔ of last year’s based on Aug 2019 and 2020. Demand is growing while supply is decreasing, snowballing the real estate market into a hot, competitive market. This is increasing the barrier to entry as the amount of capital needed to purchase real estate is also growing. 
 
 In order to examine such phenomena mid-pandemic, we seek to answer, _‘How did the COVID-19 pandemic impact the real estate industry?’ ‘How well has the real estate market performed compared to other markets?’ and ‘What explains this real estate market behavior?’_
 
 # Overview of Analysis
+
+We look to explore the single family real estate market and the impact of COVID-19 on the market. We specifically are looking at single family homes (SFH) because of the higher liquidity within the market, lowest barrier to entry, and because commercial data is not publicly available.
+
 In order to analyze the impact of Covid on the real estate market, we first turn to the impact on national sales volume regarding SFH. Then we seek any differences between average home prices of the US and certain states. Then we seek to understand the real estate on a more granular level by analyzing how prices were impacted by state. This will help us understand how overall the supply and demand of the market affected the prices and quantities that homes are selling for.
 
 Once we realize the overall market effects, we examine how the real estate market has performed vs other markets. We do this by comparing the Home Price Index with the Consumer Price Index and the S&P 500. This will allow us to understand how the real estate market performed in comparison with the average cost of living and compared to the top 500 stocks in the US.
@@ -54,6 +57,7 @@ Once we realize the overall market effects, we examine how the real estate marke
 Then we try to understand what developments caused the market to react in the way that it did. Two common allegations are that it is because interest rates are low and because construction costs are high. Thus we plotted the interest rate and home price to understand the relationship between interest rates and home prices. Then, we compared the percentage change between construction material costs and building permits approved to examine the relationship between construction costs and newly built homes. 
 
 # Data
+
 Our data was extracted from a variety of sources such as the Federal Reserve Bank of St. Louis, US Census, and Zillow. 
 
 The data for national home sales count and median home sale price came from Zillow.
@@ -63,13 +67,15 @@ The data for national home sales count and median home sale price came from Zill
 The data for CPI, HPI, and S&P 500 came from the Federal Reserve Bank of St. Louis, also known as the FRED.
 
 [HPI](https://fred.stlouisfed.org/series/CSUSHPINSA)
+
 [CPI](https://fred.stlouisfed.org/series/USACPIALLMINMEI)
+
 [S&P 500](https://fred.stlouisfed.org/series/SP500)
 
-We found our data for the building permits came from the Building Permits Survey from the US Census data. This dataset provides data on the number of new housing units authorized by building permits. 
-The construction material index was sourced from the Federal Reserve Bank of St. Louis the FRED.
+We found our data for the building permits came from the Building Permits Survey from the US Census data. This dataset provides data on the number of new housing units authorized by building permits. Finally, the construction material index was sourced from the Federal Reserve Bank of St. Louis the FRED.
 
 [BPS](https://www.census.gov/construction/bps/)
+
 [Construction Materials Index](https://fred.stlouisfed.org/series/WPUSI012011)
 
 
@@ -103,7 +109,7 @@ BoxPlot <- BoxPlotData %>%
     ) +
     ggtitle("Housing Prices by Region, Year by Year") +
     xlab("Region") +
-    theme_ipsum()
+    ylab("Price")
 
 #turn the text on x-axis 50 degrees
 BoxPlot <- BoxPlot + theme(axis.text.x = element_text(angle = 50, hjust = 1))
@@ -214,7 +220,7 @@ Indexplot <- CPIHPI %>%
 Indexplot
 ```
 
-The HPI has outperformed the CPI over the course of 20 years and certainly stands as an asset class that appreciates faster than inflation. Although we do see a large rise and fall between 2005-2012, we can see that the HPI has recovered even higher than the past peak. The housing market thus seems like a more volatile compared to the living expenses of the average US citizen. This indeed allows us to realize that investing in real estate is more likely than not to grow and is a better alternative to holding cash. However, we also look to see how real estate has performed compared to the stock market in the form of the S&P 500 index. 
+The HPI has outperformed the CPI over the course of 20 years and certainly stands as an asset class that appreciates faster than the cost of living. Although we do see a large crash between 2008-2012, we can see that the HPI has recovered even higher than the past peak. We also see that the CPI has increased in a stable fashion. The housing market thus seems like a more volatile compared to the living expenses of the average US citizen, but better returns. This indeed allows us to realize that investing in real estate is more likely than not to grow and is a better alternative to holding cash. However, we also look to see how real estate has performed compared to the stock market in the form of the S&P 500 index. Specifically during the pandemic, we also see that the HPI increased at record rates.
 
 ```{r, echo=FALSE}
 SPplot <- SPHomePrice %>%
@@ -228,9 +234,9 @@ SPplot <- SPHomePrice %>%
 SPplot
 ```
 
-In comparison with the S&P 500, we can see that the HPI is much more stable compared to the volatility of the stock market. While the HPI averages around 3%, we can see that the S&P 500 grows at a 7% average. In this case, we can see that the top 500 stocks will perform better than the average house in the US. However, there are some caveats that need attention. First is that the S&P 500 tracks the top 500 stocks while the HPI tracks all home values. Thus, it is not the best comparison when comparing returns due to the fact the HPI considers personal residencies that do not try to achieve the returns of investment properties, while all S&P 500 companies are trying to achieve a high return. 
+In comparison with the S&P 500, we can see that the HPI is much more stable compared to the volatility of the stock market. While the HPI averages around 2-3%, we can see that the S&P 500 grows at a 7% average. In this case, we can see that the top 500 stocks will perform better than the average house in the US. However, there are some caveats that need attention. First is that the S&P 500 tracks the top 500 stocks while the HPI tracks all home values. Thus, it is not the best comparison when comparing returns due to the fact the HPI considers personal residencies that do not try to achieve the returns of investment properties, while all S&P 500 companies are trying to achieve a high return. In addition, the HPI only tracks appreciation and does not reflect the true returns of real estate. This is because tax benefits from depreciation and 1031 exchanges, principal and interest pay down, leverage, and cash flow are largely ignored in the HPI.  
 
-The difference in volatility may be explained in the liquidity of the market. Stock are able to be bought and sold in a relatively quick manner while real estate may take weeks, months, or even years to buy or sell properties. Thus, market changes are much more pronounced in the stock market while changes may be slow to show in the real estate market. 
+The difference in volatility may be explained in the liquidity and efficiency of the market. Stocks are able to be bought and sold in a relatively quick manner while real estate may take weeks, months, or even years to buy or sell properties. Thus, market changes are much more pronounced in the stock market while changes may be slow to show in the real estate market. In addition, real estate is generally a more stable asset in comparison to stocks, so the volatility also reflects the risk profile of each asset. 
 
 # Interest and Home Price Relationship
 
@@ -259,7 +265,7 @@ BPvCMplot <- BPvCM %>%
 BPvCMplot
 ```
 
-Interestingly, we actually see that building permits increase when construction material has increased. This is a perplexing finding as we expect building permits to increase as construction material costs decrease. We expected this outcome because homebuilders can expect a higher return when the costs of building decrease, which incentivizes more home builders to build. Yet this was not the case. This may be because although construction material prices increased, sales price also increased accordingly, which invited more new builds. In addition, because the building permits are approved by the government, there may be a delay from when a home builder applies to build to when a home builder receives a permit. 
+Interestingly, we actually see that building permits increase when construction material has increased. This is a perplexing finding as we expect building permits to increase as construction material costs decrease. We expected this outcome because homebuilders can expect a higher return when the costs of building decrease, which incentivizes more home builders to build. Yet this was not the case. This may be because although construction material prices increased, sales price also increased accordingly, which invited more new builds. In addition, the amount of building permits approved may increase demand for construction material, which could make these two variables move together. Lastly, because the building permits are approved by the government, there may be a delay from when a home builder applies to build to when a home builder receives a permit.
 
 # Conclusion and Limitations
 
@@ -267,17 +273,15 @@ Interestingly, we actually see that building permits increase when construction 
 
 **1. How did the COVID-19 pandemic impact the real estate industry?**
 
-We observed that sales prices saw a slight dip, but rebounded and actually recorded record growth. Overall sales count also increased and the real estate market has seen strong growth throughout the pandemic. This was contrary to many people's belief that the market was to crash like 2008. However, we see that foreclosure protection as well as eviction protection, allows the market to stay robust. 
+We observed that sales prices saw a slight dip, but rebounded and actually recorded record growth. Overall sales count decreased and price increased. With increased demand from low interest rates, the real estate market has seen strong growth throughout the pandemic. This was contrary to many people's belief that the market was to crash like 2008. However, we see that forebearance and foreclosure protection as well as eviction protection allows the market to stay robust. 
 
 **2. How well has the real estate market performed compared to other markets?**
 
-We found that, despite the pandemic, real estate has performed marketedly well in comparison to other assets. In comparison to the CPI, we were able to observe that real estate historically beat out inflation. However, in comparison to the S&P 500, it lacked the returns. However, it was much less volatile than stocks during distressed times as a stable investment. However, this may be due to the forbearance and foreclosure protection, so it will be interesting to see how the market develops once these protections have dissappeared.
+We found that, despite the pandemic, real estate has performed well in comparison to other assets. In comparison to the CPI, we were able to observe that real estate historically beat out inflation. However, in comparison to the S&P 500, it lacked the returns. However, it was much less volatile than stocks during distressed times as a stable investment. However, this may be due to the forbearance and foreclosure protection, so it will be interesting to see how the market develops once these protections have dissolved.
 
-Yet this comparison does not factor in the benefits of owning real estate and the adjusted returns incorporating such benefits. The HPI shows the average appreciation of homes, but does not include the depreciation, tax benefits, cash flow, principal paydown, leverage, and forced appreciation that homeowners enjoy.
+Yet this comparison does not factor in the benefits of owning real estate and the adjusted returns incorporating such benefits. The HPI shows the average appreciation of homes, but does not include the depreciation, tax benefits, cash flow, loan pay down, leverage, and forced appreciation that homeowners enjoy.
 
-This also does not include the 1031 exchange, which allows homeowners defer their taxes to later years and sell their property to buy a greater or equal value home. This in turn allows the investor to invest pre-tax cash to achieve higher returns with a bigger bankroll.
-
-Thus, while some investors may consider real estate an inferior investment to stocks based on these indexes, but fail to realize the unrecorded benefits of real estate.
+This also does not include the 1031 exchange, which allows homeowners defer their taxes to later years and sell their property to buy a greater or equal value home. This in turn allows the investor to invest pre-tax cash to achieve higher returns with a bigger bankroll. Thus, while some investors may consider real estate an inferior investment to stocks based on these indexes, they fail to realize the unrecorded benefits of real estate.
 
 **3. What explains this real estate market behavior?**
 
@@ -290,6 +294,8 @@ We actually found evidence against the theory that construction material price i
 One limitation to our study is that the real estate market does not have perfect information and includes a large off-market section. We are unable to track these transactions and thus does not provide the full picture of all real estate transactions. However, we are able to track those listed on MLS and sites such as Zillow and Redfin, which allow us to graspe a general sense of the real estate market. 
 
 Our construction data and findings could also be limited by government bureaucracy. Government and market move at different paces, the government might approve permits at different dates than the application. Thus, building permits approved may not yet accurately reflect the larger claims we believe to be true for supply of homes.
+
+Finally, the HPI does not accurately reflect the return on investment because it only factors in home price appreciation. 
 
 ## Possible Next Steps
 
