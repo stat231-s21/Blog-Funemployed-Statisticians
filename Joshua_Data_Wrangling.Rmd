@@ -422,21 +422,27 @@ BPvCMplot
 ```
 
 #Ethan 
-```{r cars}
+```{r}
+#download state by state housing prices
 valueTableState<- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_homevalue.csv")
 
+#download national and city housing prices
 valueTableUS <- read.csv("/home/class21/jokim21/Git/Blog-Funemployed-Statisticians/Zillow_USMetro.csv")
 
+#select certain dates for price data, and only include the US data, none of the cities
 valueTableUS2 <- valueTableUS %>%
   select(3,5,282:308) %>%
   filter(RegionName == "United States")
 
+#select certain dates for price data after 2019
 valueTable2 <- valueTableState%>%
   select(3,5,282:308)
 
+#Combine the overall US data with state by state data
 FullTable <- valueTable2 %>%
   full_join(valueTableUS2)
 
+#Pivot the data frame to a long data style
   FullTableLong <- FullTable %>%
   pivot_longer(c(-"RegionName",-"StateName"), names_to = "date" , values_to = "price")
 
@@ -548,6 +554,8 @@ leaflet(data = usa_states_leaflet) %>%
 write_csv(usa_states_leaflet, file="Datasets/usa_states_leaflet.csv")
 write_csv(FullMap, file="Datasets/FullMap.csv")
 ```
+
+
 
 ## National Sales Volume Difference over Time (Box Plot)
 

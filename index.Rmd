@@ -106,22 +106,39 @@ BoxPlotData %>%
 # Home Price by State, Interactive Spatial Map
 
 ```{r, echo=FALSE}
-MapTable <- FullTableLong %>%
-    filter(date == "X2019.01.31")
+#Create the table that holds the data to create my map
+  MapTable <- FullTableLong %>%
+    filter(date == "X2021.03.31" | date == "X2020.03.31")
 
+#create a variable that calculates the percent change from 2020 to 2021
+  MapTableNext <- MapTable %>%
+    group_by(RegionName) %>%
+      mutate(PercentChange = round(((price - lag(price))/lag(price))*100, 3)) %>%
+      filter(date == "X2021.03.31")
+
+  #Create the variable that holds US state map data
 usa_states <- map_data(map = "state"
                        , region = ".")
+#Revise the table to only include the data points wanted for the map
+  MapTable <- MapTable %>%
+    filter(date == "X2021.03.31")
 
-
+#Mutate the data names in the MapTable so they line up with the names in the
+  #leaflet
 MapTable <- MapTable %>%
   mutate("RegionName" = tolower(RegionName))
-#creating new datset
+
+#creating new dataset that joins the graphs together
 MapTable2 <- MapTable %>%
   inner_join(usa_states, by = c("RegionName" = "region"))
 
-
+#Mutate the data names in the MapTableNexr so they line up with the names in the
+#leaflet
+MapTableNext <- MapTableNext %>%
+  mutate("RegionName" = tolower(RegionName))
 options(scipen=10000)
 
+#Create the leaflet and assign the names
 usa_states_leaflet <- map("state", fill = TRUE, plot = FALSE)
 class(usa_states_leaflet)
 usa_states_leaflet$names
@@ -131,34 +148,38 @@ usa_states_leaflet2 <- as.data.frame(usa_states_leaflet$names) %>%
 #Renames variable for clarity
   rename(RegionName = 'usa_states_leaflet$names') %>%
 #Isolates the state name and discards information regarding region within state
-  separate(col = RegionName, into = c("RegionName2", "extra"), sep = ":", remove = FALSE)
+  separate(col = RegionName, into = c("RegionName2", "extra"), sep = ":",
+           remove = FALSE)
 
-#Combines "blank map" with data on housing
+#Combines "blank map" with data on housing prices
 FullMap <- usa_states_leaflet2 %>%
-  left_join(MapTable, by= c("RegionName2" = "RegionName"))
+  left_join(MapTableNext, by= c("RegionName2" = "RegionName"))
 
-
+#Sets up the color palate for the map
 mypal <- colorNumeric(
   palette = "YlGnBu",
   domain = MapTable$price
 )
 
-leaflet(data = usa_states_leaflet) %>%
+#creates the leaflet map of housing prices in the US
+PriceMap <- leaflet(data = usa_states_leaflet) %>%
   addTiles() %>%
   setView(-90,42.4, zoom = 3.5) %>%
-  # base state's fill color on proportion planning for in-person learning
+  # base state's fill color on housing price
   addPolygons(fillColor = ~mypal(FullMap$price)
-              , color = "#FFFF33"  #color needs to be in hex format
-              , fillOpacity = 0.7
+              , color = "#FFFF33"  #hex format of color
+              , fillOpacity = 0.9
               , stroke = FALSE
+              #determines what will pop up when a state is clicked
               , popup = paste0("State: ", FullMap$RegionName2, "<br>"
-                             , "Average Price: $"
-                             , FullMap$price, "<br>" )) %>%
+                             , "Average Price as of March, 2021: $", FullMap$price, "<br>"
+                             ,"Year over year price change: ", FullMap$PercentChange, "%<br>"
+                              )) %>%
   # add legend explaining fill color
    addLegend(pal = mypal,
             values = FullMap$price,
             position = "bottomright",
-            title = "Home Prices by State")
+            title = "Home Prices by State as of March 31, 2021")
 ```
 
 # Comparison of Housing Price Index, Consumer Price Inde, and S&P 500

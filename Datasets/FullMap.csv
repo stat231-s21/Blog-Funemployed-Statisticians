@@ -1,64 +1,64 @@
-RegionName,RegionName2,extra,StateName,date,price
-alabama,alabama,NA,AL,X2019.01.31,140424
-arizona,arizona,NA,AZ,X2019.01.31,254859
-arkansas,arkansas,NA,AR,X2019.01.31,127604
-california,california,NA,CA,X2019.01.31,558168
-colorado,colorado,NA,CO,X2019.01.31,399660
-connecticut,connecticut,NA,CT,X2019.01.31,257920
-delaware,delaware,NA,DE,X2019.01.31,259631
-district of columbia,district of columbia,NA,DC,X2019.01.31,632802
-florida,florida,NA,FL,X2019.01.31,242587
-georgia,georgia,NA,GA,X2019.01.31,198324
-idaho,idaho,NA,ID,X2019.01.31,270500
-illinois,illinois,NA,IL,X2019.01.31,206196
-indiana,indiana,NA,IN,X2019.01.31,150430
-iowa,iowa,NA,IA,X2019.01.31,148547
-kansas,kansas,NA,KS,X2019.01.31,150464
-kentucky,kentucky,NA,KY,X2019.01.31,142117
-louisiana,louisiana,NA,LA,X2019.01.31,169164
-maine,maine,NA,ME,X2019.01.31,234839
-maryland,maryland,NA,MD,X2019.01.31,311602
-massachusetts:martha's vineyard,massachusetts,martha's vineyard,MA,X2019.01.31,424817
-massachusetts:main,massachusetts,main,MA,X2019.01.31,424817
-massachusetts:nantucket,massachusetts,nantucket,MA,X2019.01.31,424817
-michigan:north,michigan,north,MI,X2019.01.31,169610
-michigan:south,michigan,south,MI,X2019.01.31,169610
-minnesota,minnesota,NA,MN,X2019.01.31,253041
-mississippi,mississippi,NA,MS,X2019.01.31,123216
-missouri,missouri,NA,MO,X2019.01.31,159834
-montana,montana,NA,MT,X2019.01.31,279918
-nebraska,nebraska,NA,NE,X2019.01.31,173428
-nevada,nevada,NA,NV,X2019.01.31,305114
-new hampshire,new hampshire,NA,NH,X2019.01.31,286288
-new jersey,new jersey,NA,NJ,X2019.01.31,336346
-new mexico,new mexico,NA,NM,X2019.01.31,196102
-new york:manhattan,new york,manhattan,NY,X2019.01.31,317408
-new york:main,new york,main,NY,X2019.01.31,317408
-new york:staten island,new york,staten island,NY,X2019.01.31,317408
-new york:long island,new york,long island,NY,X2019.01.31,317408
-north carolina:knotts,north carolina,knotts,NC,X2019.01.31,199127
-north carolina:main,north carolina,main,NC,X2019.01.31,199127
-north carolina:spit,north carolina,spit,NC,X2019.01.31,199127
-north dakota,north dakota,NA,ND,X2019.01.31,229320
-ohio,ohio,NA,OH,X2019.01.31,145778
-oklahoma,oklahoma,NA,OK,X2019.01.31,126360
-oregon,oregon,NA,OR,X2019.01.31,358911
-pennsylvania,pennsylvania,NA,PA,X2019.01.31,190149
-rhode island,rhode island,NA,RI,X2019.01.31,297528
-south carolina,south carolina,NA,SC,X2019.01.31,186297
-south dakota,south dakota,NA,SD,X2019.01.31,209879
-tennessee,tennessee,NA,TN,X2019.01.31,180748
-texas,texas,NA,TX,X2019.01.31,203893
-utah,utah,NA,UT,X2019.01.31,338069
-vermont,vermont,NA,VT,X2019.01.31,252123
-virginia:chesapeake,virginia,chesapeake,VA,X2019.01.31,277426
-virginia:chincoteague,virginia,chincoteague,VA,X2019.01.31,277426
-virginia:main,virginia,main,VA,X2019.01.31,277426
-washington:san juan island,washington,san juan island,WA,X2019.01.31,403064
-washington:lopez island,washington,lopez island,WA,X2019.01.31,403064
-washington:orcas island,washington,orcas island,WA,X2019.01.31,403064
-washington:whidbey island,washington,whidbey island,WA,X2019.01.31,403064
-washington:main,washington,main,WA,X2019.01.31,403064
-west virginia,west virginia,NA,WV,X2019.01.31,105386
-wisconsin,wisconsin,NA,WI,X2019.01.31,187008
-wyoming,wyoming,NA,WY,X2019.01.31,240428
+RegionName,RegionName2,extra,StateName,date,price,PercentChange
+alabama,alabama,NA,AL,X2021.03.31,163900,9.817
+arizona,arizona,NA,AZ,X2021.03.31,329496,19.43
+arkansas,arkansas,NA,AR,X2021.03.31,143910,7.999
+california,california,NA,CA,X2021.03.31,644020,11.246
+colorado,colorado,NA,CO,X2021.03.31,458015,10.654
+connecticut,connecticut,NA,CT,X2021.03.31,300135,14.501
+delaware,delaware,NA,DE,X2021.03.31,290932,11.27
+district of columbia,district of columbia,NA,DC,X2021.03.31,678707,3.4
+florida,florida,NA,FL,X2021.03.31,277429,9.981
+georgia,georgia,NA,GA,X2021.03.31,232144,10.626
+idaho,idaho,NA,ID,X2021.03.31,369495,22.9
+illinois,illinois,NA,IL,X2021.03.31,225595,7.728
+indiana,indiana,NA,IN,X2021.03.31,177309,10.688
+iowa,iowa,NA,IA,X2021.03.31,161514,5.027
+kansas,kansas,NA,KS,X2021.03.31,172053,9.272
+kentucky,kentucky,NA,KY,X2021.03.31,163721,8.525
+louisiana,louisiana,NA,LA,X2021.03.31,181984,5.059
+maine,maine,NA,ME,X2021.03.31,286106,13.73
+maryland,maryland,NA,MD,X2021.03.31,351766,10.747
+massachusetts:martha's vineyard,massachusetts,martha's vineyard,MA,X2021.03.31,490712,11.976
+massachusetts:main,massachusetts,main,MA,X2021.03.31,490712,11.976
+massachusetts:nantucket,massachusetts,nantucket,MA,X2021.03.31,490712,11.976
+michigan:north,michigan,north,MI,X2021.03.31,199051,10.937
+michigan:south,michigan,south,MI,X2021.03.31,199051,10.937
+minnesota,minnesota,NA,MN,X2021.03.31,289798,9.093
+mississippi,mississippi,NA,MS,X2021.03.31,136596,6.116
+missouri,missouri,NA,MO,X2021.03.31,185247,10.515
+montana,montana,NA,MT,X2021.03.31,334168,12.447
+nebraska,nebraska,NA,NE,X2021.03.31,199104,8.694
+nevada,nevada,NA,NV,X2021.03.31,342888,9.72
+new hampshire,new hampshire,NA,NH,X2021.03.31,343300,13.704
+new jersey,new jersey,NA,NJ,X2021.03.31,387105,12.329
+new mexico,new mexico,NA,NM,X2021.03.31,235237,12.701
+new york:manhattan,new york,manhattan,NY,X2021.03.31,355963,8.911
+new york:main,new york,main,NY,X2021.03.31,355963,8.911
+new york:staten island,new york,staten island,NY,X2021.03.31,355963,8.911
+new york:long island,new york,long island,NY,X2021.03.31,355963,8.911
+north carolina:knotts,north carolina,knotts,NC,X2021.03.31,234934,11.294
+north carolina:main,north carolina,main,NC,X2021.03.31,234934,11.294
+north carolina:spit,north carolina,spit,NC,X2021.03.31,234934,11.294
+north dakota,north dakota,NA,ND,X2021.03.31,242661,3.703
+ohio,ohio,NA,OH,X2021.03.31,173380,11.773
+oklahoma,oklahoma,NA,OK,X2021.03.31,144546,7.859
+oregon,oregon,NA,OR,X2021.03.31,416263,11.73
+pennsylvania,pennsylvania,NA,PA,X2021.03.31,221251,11.164
+rhode island,rhode island,NA,RI,X2021.03.31,353754,14.047
+south carolina,south carolina,NA,SC,X2021.03.31,213450,9.464
+south dakota,south dakota,NA,SD,X2021.03.31,234523,7.128
+tennessee,tennessee,NA,TN,X2021.03.31,214708,11.201
+texas,texas,NA,TX,X2021.03.31,231384,9.308
+utah,utah,NA,UT,X2021.03.31,417724,15.951
+vermont,vermont,NA,VT,X2021.03.31,283273,8.059
+virginia:chesapeake,virginia,chesapeake,VA,X2021.03.31,315924,9.025
+virginia:chincoteague,virginia,chincoteague,VA,X2021.03.31,315924,9.025
+virginia:main,virginia,main,VA,X2021.03.31,315924,9.025
+washington:san juan island,washington,san juan island,WA,X2021.03.31,488114,13.632
+washington:lopez island,washington,lopez island,WA,X2021.03.31,488114,13.632
+washington:orcas island,washington,orcas island,WA,X2021.03.31,488114,13.632
+washington:whidbey island,washington,whidbey island,WA,X2021.03.31,488114,13.632
+washington:main,washington,main,WA,X2021.03.31,488114,13.632
+west virginia,west virginia,NA,WV,X2021.03.31,115018,5.669
+wisconsin,wisconsin,NA,WI,X2021.03.31,219942,10.755
+wyoming,wyoming,NA,WY,X2021.03.31,266224,3.919
